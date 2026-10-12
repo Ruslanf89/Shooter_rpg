@@ -1,0 +1,26 @@
+# Normalize text files (Godot scenes, scripts, resources) to LF in the repository
+* text=auto
+
+# Binary assets: never touch line endings or try to diff them
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.exr binary
+*.wav binary
+*.ogg binary
+*.mp3 binary
+*.glb binary
+*.fbx binary
+*.bin binary
+*.res binary
+*.scn binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.wasm binary
+*.a binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.pdf binary
+*.onnx binary

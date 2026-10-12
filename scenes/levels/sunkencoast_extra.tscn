@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/extra_root.gd" id="1_gqpif"]
+[ext_resource type="Script" path="res://scripts/extra_prop.gd" id="3_va3mc"]
+
+[node name="SunkencoastExtras" type="Node3D" unique_id=1352009897]
+script = ExtResource("1_gqpif")
+reference_scene = "res://scenes/levels/reference/sunkencoast_reference.scn"
+
+[node name="ExampleLantern_DeleteMe" type="Node3D" parent="." unique_id=1734048286]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -228)
+script = ExtResource("3_va3mc")
+kind = "lantern"

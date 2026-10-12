@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/extra_root.gd" id="1_7tpvu"]
+[ext_resource type="Script" path="res://scripts/extra_prop.gd" id="3_4qx1m"]
+
+[node name="FarmlandsExtras" type="Node3D" unique_id=1068640533]
+script = ExtResource("1_7tpvu")
+reference_scene = "res://scenes/levels/reference/farmlands_reference.scn"
+
+[node name="ExampleLantern_DeleteMe" type="Node3D" parent="." unique_id=321176907]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -224)
+script = ExtResource("3_4qx1m")
+kind = "lantern"

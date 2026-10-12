@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/extra_root.gd" id="1_8qcm1"]
+[ext_resource type="Script" path="res://scripts/extra_prop.gd" id="3_shoch"]
+
+[node name="FrostpeakExtras" type="Node3D" unique_id=1246713831]
+script = ExtResource("1_8qcm1")
+reference_scene = "res://scenes/levels/reference/frostpeak_reference.scn"
+
+[node name="ExampleLantern_DeleteMe" type="Node3D" parent="." unique_id=549630740]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -228)
+script = ExtResource("3_shoch")
+kind = "lantern"

@@ -1,0 +1,24 @@
+# --- Godot cache and export output (rebuilt automatically) ---
+.godot/
+/build/
+/android/
+*.tmp
+*.translation
+
+# --- Source asset archives in the project root (kept locally, too big for git) ---
+/*.zip
+/*.rar
+/*.7z
+/*.tpz
+
+# --- Re-downloadable tools and raw downloads (see "Setting up a fresh copy" in README.md) ---
+/tools/piper/
+/tools/voices/
+/downloads/
+/_duplicate_sounds_backup/
+
+# --- OS / editor junk ---
+Thumbs.db
+desktop.ini
+.DS_Store
+*.blend1
