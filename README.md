@@ -194,7 +194,7 @@ The first location's people and monsters are driven by a local AI.
 - **SQLite** (`brain/northvale.db`) remembers.
 - **Piper** (Ukrainian) and the Windows voices (English) speak every line.
 
-**The AI is required to play.** The main menu shows the brain's status, and New Game / Continue wait until it says *AI brain ready*. The game starts Ollama and the brain by itself.
+**Turned off for now:** `Brain.ENABLED` is `false` in `scripts/brain.gd`, so the game uses its scripted, pre-voiced dialogue and doesn't start Ollama or Python. Set it to `true` to bring the AI back; then the AI is required to play. The main menu shows the brain's status, and New Game / Continue wait until it says *AI brain ready*. The game starts Ollama and the brain by itself.
 
 - **Characters** (edit them in `brain/personas.json`):
   - **Brother Aldric:** a secretive zealot who calls your rifle a devil's tool.
@@ -237,6 +237,25 @@ The first location's people and monsters are driven by a local AI.
   - Change `gpu_layers` in `brain/config.json`: higher is faster AI but less room for the game.
 - **Comparing models:** `python brain/compare.py uk qwen3:4b qwen3:8b` runs the same Northvale moments through both. qwen3:4b was faster but its Ukrainian was often broken.
 - **Sharing a build:** players need Python 3.12 and Ollama with `qwen3:8b` installed. The `brain` folder goes next to the exe, without `cache/`, `northvale.db` and `config.json`.
+
+## The gothic abbey church and iron railings (newest)
+Northvale Abbey's old hall is now a real gothic abbey church, after Salisbury Cathedral (`scripts/gothic_church.gd`). Its west front faces the courtyard; the church runs back about 51 m behind it. The bell tower, the round keep and the side wing are unchanged.
+- **Outside:**
+  - A broad screen front with four spired stair turrets, a great portal (carved arch mouldings on shafts, a tympanum with a gilded roundel, double doors that open), two blind side portals, a triple lancet window and a rose window in the gable.
+  - Lower side aisles with two-light tracery windows. Flying buttresses spring from pinnacled piers over the aisle roofs to the tall clerestory.
+  - Transepts with tall triple lancets and rose windows. A two-bay choir with a flat east end and a triple lancet.
+  - A crossing tower with a belfry, corner pinnacles and a 64 m stone spire with bands, lucarnes and a gilded cross.
+  - Grey slate roofs.
+- **Inside:**
+  - A tall nave with pointed arcades on clustered piers, a triforium (blind arcade), clerestory windows, and quadripartite rib vaults with ridge ribs and gilded bosses.
+  - Vaulted aisles, crossing, transepts and choir.
+  - Pews, choir stalls, an altar with a carved reredos, a font by the door, iron chandeliers.
+  - Soft pools of coloured light on the floor.
+- **Stained glass** (`shaders/stained_glass.gdshader`, glass pattern generated in code) glows when you're inside, and looks dark and glossy from outside, as real stained glass does by day.
+- **Railings** (`scripts/iron_fence.gd`, after the Victorian fence reference): a red-brick plinth with stone coping, brick piers with stone caps, and iron spear bars. They replace the courtyard walls, with a scrolled double iron gate (opens with F, starts open).
+- **Churchyard:** a fenced churchyard beside the church has headstones, crosses, ledger slabs, a chest tomb, a bench and its own gate.
+- Built from extruded pointed-arch outlines merged into one mesh per material, so it costs almost nothing in FPS. Interior details are only drawn within 120 m.
+- Iron gates are `HouseDoor`s with `style = "iron"` (and `start_open`).
 
 ## Version control (git + GitHub)
 - The project is a git repository, published to a **private** GitHub repo with GitHub Desktop. Open GitHub Desktop to see every change, commit, and **Push origin** to back it up online.

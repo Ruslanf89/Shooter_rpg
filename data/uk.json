@@ -46,6 +46,8 @@
 "Climb the tree": "Залізти на дерево",
 "Close door": "Зачинити двері",
 "Open door": "Відчинити двері",
+"Close gate": "Зачинити ворота",
+"Open gate": "Відчинити ворота",
 "Elite": "Елітний",
 "Fullscreen doesn't work inside the editor's Game tab - see README": "Повний екран не працює у вкладці Game редактора - див. README",
 "Health": "Здоров'я",

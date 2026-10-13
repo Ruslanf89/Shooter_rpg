@@ -108,6 +108,7 @@ func layout(w: Node3D) -> void:
 			[Vector2(FARM.x, FARM.z), 18.0], [cross, 8.0]]:
 		w.add_zone(z[0], z[1])
 	w.add_zone(Vector2(DRONE_TREE.x, DRONE_TREE.z), 9.0)
+	w.add_zone(Vector2(ABBEY.x, ABBEY.z - 18.0), 31.0)   # the abbey church runs back behind the courtyard
 	w.add_zone(Vector2(MINE.x - 34, MINE.z), 16.0)   # the cave chamber under the hill
 	w.paint_circle(Vector2(MINE.x - 34, MINE.z), 11.5, 0)
 	w.paint_rect(Rect2(MINE.x - 26, MINE.z - 3, 24, 6), 0)
@@ -190,24 +191,13 @@ func _abbey(w: Node3D, o: Vector3) -> void:
 	var stone := Props.stone(Color(1.12, 1.06, 0.94), 0.28)
 	var stone_dark := Props.stone(Color(0.88, 0.84, 0.78), 0.28)
 	var roof := Props.roof(Color(0.5, 0.62, 1.35))
-	var glass := MeshKit.mat(Color(0.35, 0.55, 1.0), 0.3, 0.0, 0.8)
 	var gold := MeshKit.mat(Color(0.95, 0.75, 0.25), 0.4, 0.6)
-	var banner := MeshKit.mat(Color(0.15, 0.25, 0.65))
 	var dark := MeshKit.mat(Color(0.06, 0.06, 0.08))
-	var wood := Props.dark_wood()
 	var n := Props.pivot(w, o)
 
-	# main hall: hollow nave you can walk into through the double door
-	_nave(w, n, stone, stone_dark, wood, gold)
-	MeshKit.prism(n, Vector3(13, 5, 19.4), Vector3(0, 11.5, 0), roof, Vector3(0, 90, 0))
-	for x in [-9.0, -4.5, 4.5, 9.0]:
-		MeshKit.box(n, Vector3(0.9, 9.4, 0.9), Vector3(x, 4.7, 6.1), stone_dark)
-	MeshKit.box(n, Vector3(4.6, 0.6, 0.6), Vector3(0, 5.3, 6.2), stone_dark)
-	MeshKit.cyl(n, 1.3, 1.3, 0.2, Vector3(0, 7.7, 6.1), glass, Vector3(90, 0, 0), 16)
-	MeshKit.cyl(n, 0.5, 0.5, 0.22, Vector3(0, 7.7, 6.12), gold, Vector3(90, 0, 0), 8)
-	for x in [-6.6, 6.6]:
-		MeshKit.box(n, Vector3(1.5, 3.0, 0.08), Vector3(x, 2.1, 6.12), banner)
-		MeshKit.box(n, Vector3(0.6, 0.6, 0.1), Vector3(x, 2.6, 6.14), gold)
+	# the abbey church: its west front faces the courtyard, the rest runs back behind it
+	GothicChurch.build(w, o + Vector3(0, 0, 6.0 * S))
+	w.building_areas.append([Vector2(o.x, o.z), 13.0])
 
 	# square bell tower (front-left)
 	MeshKit.static_box(n, Vector3(5, 18, 5), Vector3(-11.5, 9, 3), stone)
@@ -241,14 +231,15 @@ func _abbey(w: Node3D, o: Vector3) -> void:
 	MeshKit.static_box(n, Vector3(8, 6, 8), Vector3(-1.0 - 13, 3, -2), stone)
 	MeshKit.prism(n, Vector3(9, 3.5, 8.8), Vector3(-14, 7.75, -2), roof)
 
-	# courtyard walls, gate and fountain
-	MeshKit.static_box(n, Vector3(1, 2.6, 18), Vector3(-17, 1.3, 15), stone)
-	MeshKit.static_box(n, Vector3(1, 2.6, 18), Vector3(17, 1.3, 15), stone)
-	MeshKit.static_box(n, Vector3(13.5, 2.6, 1), Vector3(-10.25, 1.3, 24), stone)
-	MeshKit.static_box(n, Vector3(13.5, 2.6, 1), Vector3(10.25, 1.3, 24), stone)
-	for p in [Vector3(-17, 0, 24), Vector3(17, 0, 24), Vector3(-3.5, 0, 24), Vector3(3.5, 0, 24), Vector3(-17, 0, 6), Vector3(17, 0, 6)]:
-		MeshKit.static_box(n, Vector3(1.6, 3.8, 1.6), p + Vector3(0, 1.9, 0), stone_dark)
-		MeshKit.prism(n, Vector3(1.8, 0.8, 1.8), p + Vector3(0, 4.2, 0), roof)
+	# courtyard railings with an iron gate, and the fountain
+	var cx := 17.0 * S
+	var front := o.z + 24.0 * S
+	var back := o.z + 6.0 * S
+	for s in [-1.0, 1.0]:
+		IronFence.run(w, Vector3(o.x + s * cx, 0, back), Vector3(o.x + s * cx, 0, front), true, false)
+		IronFence.run(w, Vector3(o.x + s * cx, 0, front), Vector3(o.x + s * 2.95, 0, front), true, false)
+	IronFence.gate(w, Vector3(o.x, 0, front), 0.0, 4.4)
+	_churchyard(w, o + Vector3(0, 0, 6.0 * S))
 	Props.lantern(w, o + Vector3(-4.8, 0, 25.6) * S)
 	Props.lantern(w, o + Vector3(4.8, 0, 25.6) * S)
 	MeshKit.static_cyl(n, 2.6, 0.9, Vector3(0, 0.45, 15), stone_dark, 16)
@@ -264,112 +255,63 @@ func _abbey(w: Node3D, o: Vector3) -> void:
 	n.scale = Vector3.ONE * S
 
 
-## The abbey nave (abbey-local units, the whole abbey is scaled by S): 18 x 12 m hall, 9 m high,
-## with stained-glass windows, a double door, pews, an aisle carpet, columns, altar and candles.
-func _nave(w: Node3D, n: Node3D, stone: Material, stone_dark: Material, wood: Material, gold: Material) -> void:
-	var hx := 9.0
-	var hz := 6.0
-	var h := 9.0
-	var win := [3.6, 6.6]
-	var front := [[9.0, 3.6, 0.0, 5.0], [2.4, 1.4, win[0], win[1]], [5.9, 1.1, win[0], win[1]], [12.1, 1.1, win[0], win[1]], [15.6, 1.4, win[0], win[1]]]
-	var back := [[4.5, 1.4, win[0], win[1]], [9.0, 1.6, 4.0, 7.4], [13.5, 1.4, win[0], win[1]]]
-	var sides := [[3.0, 1.3, win[0], win[1]], [6.0, 1.3, win[0], win[1]], [9.0, 1.3, win[0], win[1]]]
-	var walls := [[Vector3(-hx, 0, hz), Vector3(hx, 0, hz), front], [Vector3(hx, 0, hz), Vector3(hx, 0, -hz), sides],
-		[Vector3(hx, 0, -hz), Vector3(-hx, 0, -hz), back], [Vector3(-hx, 0, -hz), Vector3(-hx, 0, hz), [[3.0, 1.3, win[0], win[1]]]]]
-	w.building_areas.append([Vector2(n.global_position.x, n.global_position.z), 13.0])
-	var tints := [Color(0.3, 0.45, 1.0, 0.55), Color(1.0, 0.35, 0.25, 0.55), Color(1.0, 0.8, 0.3, 0.55), Color(0.4, 0.9, 0.5, 0.55)]
-	var k := 0
-	for wd in walls:
-		var p := Buildings.wall(n, wd[0], wd[1], h, wd[2], stone, stone_dark, wood, 1.0, false)
-		for o in wd[2]:
-			if float(o[2]) < 0.5:
+## A small fenced churchyard beside the church (c: the church's west front, church-local metres):
+## rows of headstones, crosses and grave slabs, a chest tomb, a bench and a gate to the east.
+func _churchyard(w: Node3D, c: Vector3) -> void:
+	var x0 := 12.2
+	var x1 := 24.6
+	var z0 := -20.2
+	var z1 := -28.8
+	var gz := (z0 + z1) * 0.5
+	var g := 1.655        # half the gateway, piers included
+	IronFence.run(w, c + Vector3(x0, 0, z0), c + Vector3(x1, 0, z0))
+	IronFence.run(w, c + Vector3(x1, 0, z0), c + Vector3(x1, 0, gz + g), false, false)
+	IronFence.run(w, c + Vector3(x1, 0, gz - g), c + Vector3(x1, 0, z1), false, true)
+	IronFence.run(w, c + Vector3(x1, 0, z1), c + Vector3(x0, 0, z1), false, true)
+	IronFence.run(w, c + Vector3(x0, 0, z1), c + Vector3(x0, 0, z0), false, false)
+	IronFence.gate(w, c + Vector3(x1, 0, gz), 90.0, 1.8, 2.0)
+	var n := Props.pivot(w, c)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 31
+	var stones := [Props.stone(Color(0.78, 0.78, 0.76), 0.6), Props.stone(Color(0.62, 0.64, 0.58), 0.6), Props.rock_mat(Color(0.9, 0.92, 0.85))]
+	var earth := MeshKit.mat(Color(0.26, 0.3, 0.14), 1.0)
+	for x in [14.0, 16.5, 19.0, 21.5]:
+		for z in [-21.7, -23.9, -26.1]:
+			if rng.randf() < 0.12:
 				continue
-			var c := float(o[0]) + Buildings.T * 0.5
-			var ow := float(o[1])
-			var oh := float(o[3]) - float(o[2])
-			var sg := StandardMaterial3D.new()
-			sg.albedo_color = tints[k % tints.size()]
-			sg.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-			sg.emission_enabled = true
-			sg.emission = Color(tints[k % tints.size()], 1.0)
-			sg.emission_energy_multiplier = 0.6
-			sg.cull_mode = BaseMaterial3D.CULL_DISABLED
-			k += 1
-			MeshKit.box(p, Vector3(ow, oh, 0.03), Vector3(c, (float(o[2]) + float(o[3])) * 0.5, 0), sg)
-			MeshKit.box(p, Vector3(0.06, oh, 0.08), Vector3(c, (float(o[2]) + float(o[3])) * 0.5, 0), stone_dark)
-			MeshKit.box(p, Vector3(ow, 0.06, 0.08), Vector3(c, float(o[2]) + oh * 0.62, 0), stone_dark)
-			MeshKit.box(p, Vector3(ow + 0.3, 0.2, Buildings.T + 0.3), Vector3(c, float(o[2]) - 0.1, 0), stone_dark)
-	# plinth around the outside (gap at the door)
-	for s in [-1.0, 1.0]:
-		MeshKit.box(n, Vector3(7.2, 1.0, 0.5), Vector3(s * 5.4, 0.3, hz + 0.3), stone_dark)
-		MeshKit.box(n, Vector3(0.5, 1.0, 12.6), Vector3(s * (hx + 0.3), 0.3, 0), stone_dark)
-	MeshKit.box(n, Vector3(18.6, 1.0, 0.5), Vector3(0, 0.3, -hz - 0.3), stone_dark)
-	# double door
-	for s in [-1.0, 1.0]:
-		var d := HouseDoor.new()
-		d.width = 1.8
-		d.height = 5.0
-		d.position = Vector3(s * -1.8, 0, hz - 0.05)
-		if s > 0:
-			d.rotation.y = 0.0
-		else:
-			d.rotation.y = PI
-			d.open_angle = -105.0
-		n.add_child(d)
-	# floor, ceiling and beams
-	MeshKit.box(n, Vector3(18, 0.06, 12), Vector3(0, 0.03, 0), Props.stone(Color(0.85, 0.83, 0.8), 0.5))
-	MeshKit.static_box(n, Vector3(18, 0.2, 12), Vector3(0, h + 0.1, 0), Props.dark_wood())
-	for x in [-6.0, -3.0, 0.0, 3.0, 6.0]:
-		MeshKit.box(n, Vector3(0.35, 0.45, 12), Vector3(x, h - 0.22, 0), Props.dark_wood())
-	# columns
-	for x in [-7.2, 7.2]:
-		for z in [-4.0, -1.0, 2.0, 4.8]:
-			MeshKit.static_cyl(n, 0.4, h, Vector3(x, h * 0.5, z), stone, 14)
-			MeshKit.box(n, Vector3(1.0, 0.35, 1.0), Vector3(x, 0.17, z), stone_dark)
-			MeshKit.box(n, Vector3(1.0, 0.35, 1.0), Vector3(x, h - 0.6, z), stone_dark)
-	# aisle carpet and pews
-	MeshKit.box(n, Vector3(1.8, 0.02, 10.5), Vector3(0, 0.07, 0.2), MeshKit.mat(Color(0.5, 0.08, 0.08), 1.0))
-	var pew_wood := Props.wood()
-	for row in 6:
-		var z := 4.2 - row * 1.35
-		for s in [-1.0, 1.0]:
-			var px: float = s * 3.6
-			MeshKit.static_box(n, Vector3(4.6, 0.08, 0.5), Vector3(px, 0.5, z), pew_wood)
-			MeshKit.box(n, Vector3(4.6, 0.6, 0.06), Vector3(px, 0.85, z + 0.3), pew_wood)
-			for e in [-2.25, 2.25]:
-				MeshKit.box(n, Vector3(0.08, 0.95, 0.6), Vector3(px + e, 0.47, z + 0.05), pew_wood)
-	# altar, cross, candles
-	MeshKit.static_box(n, Vector3(1.2, 0.3, 4.0), Vector3(0, 0.15, -4.8), stone_dark)
-	MeshKit.static_box(n, Vector3(3.2, 1.1, 1.2), Vector3(0, 0.85, -4.8), stone)
-	MeshKit.box(n, Vector3(3.3, 0.04, 1.3), Vector3(0, 1.42, -4.8), MeshKit.mat(Color(0.9, 0.88, 0.8), 0.95))
-	MeshKit.box(n, Vector3(0.6, 1.1, 1.32), Vector3(0, 1.0, -4.8), MeshKit.mat(Color(0.55, 0.08, 0.08), 0.95))
-	MeshKit.box(n, Vector3(0.18, 2.2, 0.12), Vector3(0, 2.6, -5.6), gold)
-	MeshKit.box(n, Vector3(1.2, 0.18, 0.12), Vector3(0, 3.1, -5.6), gold)
-	for x in [-1.3, -0.8, 0.8, 1.3]:
-		Buildings.candle(n, Vector3(x, 1.44, -4.8), absf(x) > 1.0)
-	for x in [-2.2, 2.2]:
-		MeshKit.cyl(n, 0.05, 0.12, 1.6, Vector3(x, 0.8, -4.6), gold, Vector3.ZERO, 8)
-		Buildings.candle(n, Vector3(x, 1.6, -4.6))
-	# chandeliers
-	for z in [-1.5, 2.5]:
-		var iron := MeshKit.mat(Color(0.15, 0.14, 0.13), 0.5, 0.8)
-		MeshKit.cyl(n, 0.02, 0.02, 2.5, Vector3(0, h - 1.4, z), iron, Vector3.ZERO, 4)
-		var ring := TorusMesh.new()
-		ring.inner_radius = 0.75
-		ring.outer_radius = 0.82
-		ring.rings = 24
-		ring.ring_segments = 5
-		MeshKit.inst(n, ring, Vector3(0, h - 2.7, z), iron)
-		for i in 6:
-			var a := TAU * i / 6.0
-			Buildings.candle(n, Vector3(cos(a) * 0.78, h - 2.66, z + sin(a) * 0.78), false)
-		var l := OmniLight3D.new()
-		l.light_color = Color(1.0, 0.75, 0.45)
-		l.light_energy = 2.2
-		l.omni_range = 11.0
-		Buildings.fade(l, 50.0)
-		l.position = Vector3(0, h - 3.0, z)
-		n.add_child(l)
+			var p := Vector3(x + rng.randf_range(-0.3, 0.3), 0, z + rng.randf_range(-0.2, 0.2))
+			var m: Material = stones[rng.randi() % stones.size()]
+			var tilt := Vector3(rng.randf_range(-6, 6), rng.randf_range(-8, 8), rng.randf_range(-5, 5))
+			var kind := rng.randi() % 4
+			# a low grave mound in front of the stone (the grave runs east, towards -z)
+			MeshKit.box(n, Vector3(0.8, 0.12, 1.7), p + Vector3(0, 0.06, -0.95), earth)
+			match kind:
+				0, 1:   # headstone with a rounded top
+					var hs := _holder(n, p, tilt)
+					MeshKit.static_box(hs, Vector3(0.62, 0.75, 0.13), Vector3(0, 0.37, 0), m)
+					MeshKit.cyl(hs, 0.31, 0.31, 0.13, Vector3(0, 0.75, 0), m, Vector3(90, 0, 0), 14)
+				2:      # stone cross
+					var cr := _holder(n, p, tilt)
+					MeshKit.static_box(cr, Vector3(0.4, 0.2, 0.3), Vector3(0, 0.1, 0), m)
+					MeshKit.box(cr, Vector3(0.14, 1.2, 0.12), Vector3(0, 0.8, 0), m)
+					MeshKit.box(cr, Vector3(0.6, 0.13, 0.12), Vector3(0, 1.1, 0), m)
+				_:      # a flat ledger slab with a small headstone
+					MeshKit.static_box(n, Vector3(0.9, 0.18, 1.9), p + Vector3(0, 0.09, -0.95), m)
+					MeshKit.box(n, Vector3(0.5, 0.45, 0.1), p + Vector3(0, 0.4, 0.05), m)
+	# a chest tomb and a bench by the gate
+	var tomb: Material = stones[0]
+	MeshKit.static_box(n, Vector3(1.1, 0.8, 2.1), Vector3(22.8, 0.4, -27.6), tomb)
+	MeshKit.box(n, Vector3(1.25, 0.12, 2.25), Vector3(22.8, 0.86, -27.6), stones[1])
+	MeshKit.static_box(n, Vector3(1.6, 0.08, 0.42), Vector3(23.6, 0.45, -21.2), Props.wood())
+	for e in [-0.65, 0.65]:
+		MeshKit.box(n, Vector3(0.1, 0.45, 0.4), Vector3(23.6 + e, 0.22, -21.2), stones[1])
+
+func _holder(n: Node3D, p: Vector3, rot_deg: Vector3) -> Node3D:
+	var h := Node3D.new()
+	h.position = p
+	h.rotation_degrees = rot_deg
+	n.add_child(h)
+	return h
 
 
 func _vineyard(w: Node3D, o: Vector3, rng: RandomNumberGenerator) -> void:
