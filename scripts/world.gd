@@ -269,13 +269,57 @@ func _process(delta: float) -> void:
 	# interaction prompt
 	_interactable = null
 	if not player.dead and not player.input_locked and player.climbing == null:
-		var best := 3.5
-		for n in get_tree().get_nodes_in_group("interactables"):
-			var d: float = (n as Node3D).global_position.distance_to(player.global_position)
-			if d < best:
-				best = d
-				_interactable = n
+		_interactable = _pick_interactable()
 	hud.set_prompt(("[F]  " + _interactable.prompt()) if _interactable else "")
+
+
+const INTERACT_REACH := 2.6     # metres from the eye to the thing
+
+
+## What the player can use right now: close, in front of the eye (the closer, the wider the cone)
+## and not behind a wall. Things nearer the crosshair win.
+func _pick_interactable() -> Node:
+	var eye := player.camera.global_position
+	var fwd := -player.camera.global_basis.z
+	var space := get_world_3d().direct_space_state
+	var best: Node = null
+	var best_score := INF
+	for n in get_tree().get_nodes_in_group("interactables"):
+		var p := _interact_point(n as Node3D)
+		var to := p - eye
+		var d := to.length()
+		if d > INTERACT_REACH:
+			continue
+		var facing := fwd.dot(to / maxf(d, 0.001))
+		if facing < lerpf(0.3, 0.8, clampf((d - 1.0) / 1.5, 0.0, 1.0)):
+			continue
+		var score := d * (2.0 - facing)
+		if score >= best_score:
+			continue
+		# a wall clearly in front of it blocks it (its own body, a rock or trunk around the point doesn't)
+		var q := PhysicsRayQueryParameters3D.create(eye, p, 1)
+		q.exclude = [player.get_rid()]
+		var hit := space.intersect_ray(q)
+		if not hit.is_empty() and hit.collider != n and not n.is_ancestor_of(hit.collider) \
+				and eye.distance_to(hit.position) < d - 0.8:
+			continue
+		best = n
+		best_score = score
+	return best
+
+
+func _interact_point(n: Node3D) -> Vector3:
+	if n is HouseDoor:
+		return n.to_global(Vector3((n as HouseDoor).width * 0.5, 1.1, 0.0))
+	if n is Villager or n is QuestGiver:
+		return n.global_position + Vector3(0, 1.1, 0)
+	if n is ClimbSpot and not n.down:
+		# the side of the trunk facing the player
+		var spot := n as ClimbSpot
+		var out := player.global_position - spot.tree_base
+		out.y = 0.0
+		return spot.tree_base + out.normalized() * spot.radius_bottom + Vector3(0, 1.0, 0)
+	return n.global_position + Vector3(0, 0.6, 0)
 
 
 var quests: QuestManager
