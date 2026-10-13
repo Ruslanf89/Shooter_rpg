@@ -65,8 +65,7 @@ func _ready() -> void:
 	marker.outline_size = 30
 	marker.outline_modulate = Color(0.2, 0.1, 0.0)
 	marker.position.y = head_height + 1.15
-	marker.no_depth_test = true
-	add_child(marker)
+	add_child(marker)          # walls hide it (the HUD waypoint still points the way)
 
 	voice = AudioStreamPlayer3D.new()
 	voice.bus = "SFX"
