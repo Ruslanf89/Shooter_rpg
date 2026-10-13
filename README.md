@@ -207,7 +207,19 @@ The first location's people and monsters are driven by a local AI.
   - Every quest giver, villager and kid answers in character, with 3 reply choices written by the AI. Quests, trading and *Go away* stay as buttons.
   - Quest offers and thank-yous are said in each character's own words, keeping the facts.
   - While someone "thinks", the game drops to 24 FPS so the AI gets the graphics card.
-  - Greetings are written ahead while you walk up, so they're usually instant.
+  - **Greetings are written ahead**: when you enter the location, when quests change, after each talk and while you walk up. They're usually instant.
+  - **Replies stream:** the words appear while they are written, and each finished sentence is spoken right away. First words take about 1.5 s, first voice about 3.5 s.
+  - **Live talk goes first:** writing done in the background (other greetings, shout pools, memory notes) stops halfway when you talk to someone, and is redone later.
+- **Distinct voices** (`voice_profiles` in `brain/personas.json`). Each character has its own Piper voice, speed, expressiveness, pitch and effect:
+  - Aldric: slow and deep, with church reverb.
+  - Maybell: quick and wavering.
+  - Brannock: low and rough.
+  - VesPer: slow and sleepy.
+  - Bandits: rough; the Captain is deep, distorted and echoing.
+  - Kobolds: fast, squeaky, with chorus.
+  - Cultists: a chanting chorus with reverb.
+  - Villagers and kids: picked from a few variants per person.
+  - Raise `voice_version` after editing a profile; the brain then re-speaks the saved shout pools.
 - **The valley talks:**
   - Villagers greet you as you pass, and chat with each other where you can overhear.
   - They react to bosses slain, quests done, crimes and raids.
@@ -220,7 +232,7 @@ The first location's people and monsters are driven by a local AI.
   - A **New Game** wipes the memory; shout pools are kept.
 - **Performance** (RTX 5060 8 GB):
   - 26 of the model's 36 layers run on the GPU, so the game keeps about 60–100 FPS.
-  - Replies take about 8–15 s while playing.
+  - A whole reply takes about 8–15 s while playing, but it streams, so you hear it start within a few seconds.
   - The first start pre-writes about 110 shout pools, which takes about 15 minutes in the menu; after that they're saved.
   - Change `gpu_layers` in `brain/config.json`: higher is faster AI but less room for the game.
 - **Comparing models:** `python brain/compare.py uk qwen3:4b qwen3:8b` runs the same Northvale moments through both. qwen3:4b was faster but its Ukrainian was often broken.

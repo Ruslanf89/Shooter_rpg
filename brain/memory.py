@@ -125,6 +125,12 @@ class Memory:
         self._q("UPDATE bark SET used=used+1 WHERE id=?", (r[0],))
         return {"text": r[1], "audio": r[2]}
 
+    def all_barks(self):
+        return self._q("SELECT id, pool, text FROM bark")
+
+    def set_bark_audio(self, bid, audio):
+        self._q("UPDATE bark SET audio=? WHERE id=?", (audio, bid))
+
     def fresh_count(self, pool, max_used=2):
         return self._q("SELECT COUNT(*) FROM bark WHERE pool=? AND used<?", (pool, max_used), one=True)[0]
 

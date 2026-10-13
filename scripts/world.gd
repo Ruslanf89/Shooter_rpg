@@ -176,6 +176,8 @@ func _ready() -> void:
 	for id in town_npcs:
 		quests.npcs[id] = town_npcs[id]
 	quests.setup(self, level.quests() if level.has_method("quests") else [])
+	quests.changed.connect(func() -> void: get_tree().create_timer(2.0).timeout.connect(_ai_prepare_all))
+	get_tree().create_timer(6.0).timeout.connect(_ai_prepare_all)
 	if level.has_method("pois"):
 		for poi in level.pois():
 			Props.poi(self, poi[0], poi[1], poi[2] if poi.size() > 2 else 0.0)
@@ -592,18 +594,31 @@ func _ai_talk(npc: QuestGiver, said := "") -> void:
 			open_shop(npc)])
 	var leave := [Loc.t("Go away"), end_dialogue]
 	hud.show_dialogue(npc.display_name, Loc.t(npc.title), Loc.t(quest_title), "…", [leave], 0.5)
-	var r := await Brain.talk({"npc": npc.id, "choice": said, "quest": api_quest, "ctx": ai_context()})
+	npc.stop_speaking()
+	npc.voice.set_meta("base_pitch", npc.voice_pitch)
+	# streamed: the words appear while they're written, every finished sentence is spoken at once
+	var fx := {}
+	var on_event := func(ev: Dictionary) -> void:
+		if _talking != npc:
+			return
+		match str(ev.get("t", "")):
+			"start":
+				fx.merge(ev, true)
+			"text":
+				hud.stream_dialogue_text(str(ev.get("s", "")))
+			"audio":
+				Brain.queue_voice(npc.voice, Brain.load_voice(str(ev.get("path", ""))), fx)
+				npc.gesture()
+	var r := await Brain.talk_stream({"npc": npc.id, "choice": said, "quest": api_quest, "ctx": ai_context()}, on_event)
 	if _talking != npc:
-		return       # walked away while the NPC was thinking
-	var line: String = r.get("line", "")
-	if line == "":
-		line = "…"
-	var dur := npc.speak_stream(Brain.load_voice(r.get("audio", "")))
+		return       # walked away while the NPC was talking
+	var line: String = r.get("line", "…")
+	hud.stream_dialogue_text(line)
 	var buttons := []
 	for c in r.get("choices", []):
 		var reply: String = c
 		buttons.append([reply, func() -> void: _ai_talk(npc, reply)])
-	hud.show_dialogue(npc.display_name, Loc.t(npc.title), Loc.t(quest_title), line, buttons + buttons_quest + extra + [leave], dur)
+	hud.set_dialogue_buttons(buttons + buttons_quest + extra + [leave])
 
 
 ## A trader's shop window (their stock is kept while you're in the location).
@@ -630,6 +645,7 @@ func _say(npc: QuestGiver, line_id: String, quest_title: String, buttons: Array)
 func end_dialogue() -> void:
 	if _talking and is_instance_valid(_talking):
 		_talking.stop_speaking()
+		_ai_prepare_later(_talking, 4.0)     # their next greeting is written while you go
 	_talking = null
 	player.input_locked = false
 	hud.hide_dialogue()
@@ -1049,6 +1065,26 @@ func _ai_quest_info(npc: QuestGiver) -> Dictionary:
 	return {}
 
 
+## Writes a quest giver's next greeting ahead (the brain keeps it ready for 20 minutes).
+func _ai_prepare_later(npc: QuestGiver, delay: float) -> void:
+	if not Brain.active():
+		return
+	await get_tree().create_timer(delay).timeout
+	if is_instance_valid(npc) and _talking != npc:
+		Brain.prepare({"npc": npc.id, "quest": _ai_quest_info(npc), "ctx": ai_context()})
+
+
+## Entering the location (and whenever a quest changes): every quest giver's greeting is
+## written ahead, so it's instant when you talk to them.
+func _ai_prepare_all() -> void:
+	if not Brain.active():
+		return
+	for id in quests.npcs:
+		var npc: QuestGiver = quests.npcs[id]
+		if is_instance_valid(npc) and _talking != npc:
+			Brain.prepare({"npc": id, "quest": _ai_quest_info(npc), "ctx": ai_context()})
+
+
 ## Walking up to someone: their greeting is written ahead, so it's ready when you press F.
 func _process_ai_prefetch(delta: float) -> void:
 	if not Brain.active():
@@ -1109,7 +1145,7 @@ func _ai_chat(a: Node, b: Node) -> void:
 		var v: Node = a if l.get("who", "a") == "a" else b
 		if not is_instance_valid(v) or not v.ai_free():
 			break
-		var dur: float = v.ai_say(l.get("text", ""), l.get("audio", ""))
+		var dur: float = v.ai_say(l.get("text", ""), l.get("audio", ""), l)
 		await get_tree().create_timer(dur + 0.35).timeout
 	_ai_chatting = false
 
@@ -1122,7 +1158,7 @@ func ai_villagers_react(event: String, delay := 1.2) -> void:
 	for v in _ai_villagers_near(30.0).slice(0, 2):
 		var r := await Brain.bark(v.ai_kind(), event)
 		if is_instance_valid(v) and v.ai_free():
-			await get_tree().create_timer(v.ai_say(r.get("text", ""), r.get("audio", "")) + 0.4).timeout
+			await get_tree().create_timer(v.ai_say(r.get("text", ""), r.get("audio", ""), r) + 0.4).timeout
 
 
 ## The nearest fighting mob (of `kind`, if given) around `pos` shouts about `event`.

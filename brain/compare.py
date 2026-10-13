@@ -12,7 +12,7 @@ from memory import Memory                       # noqa: E402
 
 lang = sys.argv[1] if len(sys.argv) > 1 else "uk"
 models = sys.argv[2:] or ["qwen3:4b", "qwen3:8b"]
-server.voice.say = lambda key, text: ""          # words only: speech isn't what we compare
+server.voice.say = lambda profile, text, lang="uk": ""          # words only: speech isn't what we compare
 CTX = {"time": "evening", "weather": "clear", "place": "Ashford"}
 
 CASES = [

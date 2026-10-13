@@ -280,7 +280,24 @@ func speak_stream(stream: AudioStream) -> float:
 	return stream.get_length() / voice_pitch
 
 
+## A talking gesture (while AI sentences are spoken), at most every few seconds.
+var _gesture_at := 0
+
+
+func gesture() -> void:
+	var now := Time.get_ticks_msec()
+	if now < _gesture_at or anim == null:
+		return
+	_gesture_at = now + 6000
+	var ta := _find_anim(["Wave", "Interact", "Man_Clapping", "Female_Clapping"])
+	if ta != "":
+		anim.play(ta, 0.2)
+		if _idle != "":
+			anim.queue(_idle)
+
+
 func stop_speaking() -> void:
+	Brain.clear_voice(voice)
 	voice.stop()
 
 

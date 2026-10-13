@@ -834,6 +834,7 @@ func _leave() -> void:
 
 func _end_talk() -> void:
 	_talking = false
+	Brain.clear_voice(_voice)
 	_voice.stop()
 	world.player.input_locked = false
 	world.hud.hide_dialogue()
@@ -858,8 +859,10 @@ func ai_kind() -> String:
 	return "vil:kid:kid" if _speaker() == "kid" else "vil:%s:%s" % [personality, gender]
 
 
-func ai_say(text: String, audio: String) -> float:
-	return Brain.say_at(self, text, audio, 1.35 if _speaker() == "kid" else 1.95, voice_pitch, Color(0.9, 0.95, 1.0))
+## Says an AI line over the villager's head; `fx` = {"fx", "pitch"} from the brain (their voice).
+func ai_say(text: String, audio: String, fx: Dictionary = {}) -> float:
+	return Brain.say_at(self, text, audio, 1.35 if _speaker() == "kid" else 1.95, voice_pitch * float(fx.get("pitch", 1.0)),
+		Color(0.9, 0.95, 1.0), str(fx.get("fx", "plain")))
 
 
 func ai_free() -> bool:
@@ -874,28 +877,35 @@ func _ai_greet() -> void:
 	_ai_greet_at = now + randi_range(90000, 180000)
 	var r := await Brain.bark(ai_kind(), "greet_night" if world.day_night.is_night() else "greet_day")
 	if is_instance_valid(self) and ai_free():
-		ai_say(r.get("text", ""), r.get("audio", ""))
+		ai_say(r.get("text", ""), r.get("audio", ""), r)
 
 
-## A conversation through the AI brain: the villager answers in character, with three replies.
+## A conversation through the AI brain (streamed): the villager answers in character, with three replies.
 func _ai_talk(said := "") -> void:
 	_play("talk")
 	world.player.input_locked = true
 	var leave := [Loc.t("Go away"), _leave]
 	world.hud.show_dialogue(vname, Loc.t(job), "", "…", [leave], 0.5)
+	Brain.clear_voice(_voice)
+	_voice.set_meta("base_pitch", voice_pitch)
 	var req := ai_info()
 	req["choice"] = said
 	req["ctx"] = world.ai_context()
-	var r := await Brain.talk(req)
+	var fx := {}
+	var on_event := func(ev: Dictionary) -> void:
+		if not is_instance_valid(self) or not _talking:
+			return
+		match str(ev.get("t", "")):
+			"start":
+				fx.merge(ev, true)
+			"text":
+				world.hud.stream_dialogue_text(str(ev.get("s", "")))
+			"audio":
+				Brain.queue_voice(_voice, Brain.load_voice(str(ev.get("path", ""))), fx)
+	var r := await Brain.talk_stream(req, on_event)
 	if not is_instance_valid(self) or not _talking:
 		return
-	var s := Brain.load_voice(r.get("audio", ""))
-	var dur := 3.0
-	if s:
-		_voice.stream = s
-		_voice.pitch_scale = voice_pitch
-		_voice.play()
-		dur = s.get_length() / voice_pitch
+	world.hud.stream_dialogue_text(str(r.get("line", "…")))
 	var buttons := []
 	for c in r.get("choices", []):
 		var reply: String = c
@@ -904,8 +914,7 @@ func _ai_talk(said := "") -> void:
 		buttons.append([Loc.t("Need help?"), _help])
 		buttons += _extra_topics()
 	buttons.append(leave)
-	world.hud.show_dialogue(vname, Loc.t(job), "", r.get("line", "…"), buttons, dur)
-
+	world.hud.set_dialogue_buttons(buttons)
 
 func speak(line_id: String) -> float:
 	var id := Loc.line(line_id)

@@ -28,3 +28,6 @@ desktop.ini
 /brain/northvale.db
 /brain/config.json
 __pycache__/
+
+# Godot's temporary copies of addon DLLs
+~*.dll

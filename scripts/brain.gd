@@ -141,6 +141,140 @@ func call_api(path: String, data = null, timeout := 90.0) -> Dictionary:
 	return d if d is Dictionary else {}
 
 
+## One dialogue turn, streamed: `on_event` gets {"t": "start", fx, pitch}, {"t": "text", "s"} while the
+## words are written, {"t": "audio", "path"} for every spoken sentence, and finally {"t": "done",
+## "line", "choices"}, which is also returned ({} if the brain couldn't be reached).
+func talk_stream(req: Dictionary, on_event: Callable) -> Dictionary:
+	_think(1)
+	var final := {}
+	var c := HTTPClient.new()
+	if c.connect_to_host("127.0.0.1", 8765) == OK:
+		var t0 := Time.get_ticks_msec()
+		while c.get_status() in [HTTPClient.STATUS_CONNECTING, HTTPClient.STATUS_RESOLVING] and Time.get_ticks_msec() - t0 < 5000:
+			c.poll()
+			await get_tree().process_frame
+		if c.get_status() == HTTPClient.STATUS_CONNECTED and \
+				c.request(HTTPClient.METHOD_POST, "/talk_stream", ["Content-Type: application/json"], JSON.stringify(req)) == OK:
+			while c.get_status() == HTTPClient.STATUS_REQUESTING:
+				c.poll()
+				await get_tree().process_frame
+			var pending := PackedByteArray()
+			while c.get_status() == HTTPClient.STATUS_BODY and Time.get_ticks_msec() - t0 < 180000:
+				c.poll()
+				var chunk := c.read_response_body_chunk()
+				if chunk.is_empty():
+					await get_tree().process_frame
+					continue
+				pending.append_array(chunk)
+				var nl := pending.find(10)
+				while nl >= 0:
+					var ev = JSON.parse_string(pending.slice(0, nl).get_string_from_utf8())
+					pending = pending.slice(nl + 1)
+					if ev is Dictionary:
+						if ev.get("t", "") == "done":
+							final = ev
+						on_event.call(ev)
+					nl = pending.find(10)
+	c.close()
+	_think(-1)
+	return final
+
+
+## Writes greetings ahead: the brain keeps them ready for 20 minutes.
+func prepare(req: Dictionary) -> void:
+	if not active():
+		return
+	req["prefetch"] = true
+	call_api("/talk", req, 180.0)
+
+
+# --------------------------------------------------------------------------- voice effects
+
+## Audio bus for a voice effect: echo for the priest, rough for veterans and bandits, squeaky
+## kobolds, an eerie chorus for the cultists.
+func voice_bus(fx: String) -> StringName:
+	if fx == "" or fx == "plain":
+		return &"SFX"
+	var bus_name := "AIVoice_" + fx
+	if AudioServer.get_bus_index(bus_name) >= 0:
+		return StringName(bus_name)
+	AudioServer.add_bus()
+	var i := AudioServer.bus_count - 1
+	AudioServer.set_bus_name(i, bus_name)
+	AudioServer.set_bus_send(i, "SFX")
+	match fx:
+		"priest":
+			var r := AudioEffectReverb.new()
+			r.room_size = 0.7
+			r.damping = 0.35
+			r.wet = 0.22
+			r.dry = 0.9
+			r.predelay_msec = 45.0
+			AudioServer.add_bus_effect(i, r)
+		"gruff", "captain":
+			var d := AudioEffectDistortion.new()
+			d.mode = AudioEffectDistortion.MODE_OVERDRIVE
+			d.drive = 0.22 if fx == "gruff" else 0.3
+			d.post_gain = -4.0
+			AudioServer.add_bus_effect(i, d)
+			var eq := AudioEffectLowShelfFilter.new()
+			eq.cutoff_hz = 220.0
+			eq.gain = 1.6
+			AudioServer.add_bus_effect(i, eq)
+			if fx == "captain":
+				var rv := AudioEffectReverb.new()
+				rv.room_size = 0.35
+				rv.wet = 0.12
+				AudioServer.add_bus_effect(i, rv)
+		"kobold":
+			var ch := AudioEffectChorus.new()
+			ch.wet = 0.25
+			AudioServer.add_bus_effect(i, ch)
+		"cult":
+			var ch2 := AudioEffectChorus.new()
+			ch2.voice_count = 3
+			ch2.wet = 0.45
+			AudioServer.add_bus_effect(i, ch2)
+			var rv2 := AudioEffectReverb.new()
+			rv2.room_size = 0.6
+			rv2.wet = 0.3
+			AudioServer.add_bus_effect(i, rv2)
+	return StringName(bus_name)
+
+
+## Plays generated sentences one after another on `p` (with the character's effect and pitch).
+func queue_voice(p: AudioStreamPlayer3D, stream: AudioStream, fx: Dictionary) -> void:
+	if stream == null or not is_instance_valid(p):
+		return
+	var q: Array = p.get_meta("ai_queue", [])
+	q.append(stream)
+	p.set_meta("ai_queue", q)
+	p.bus = voice_bus(str(fx.get("fx", "plain")))
+	p.pitch_scale = float(fx.get("pitch", 1.0)) * float(p.get_meta("base_pitch", 1.0))
+	if not p.has_meta("ai_hooked"):
+		p.set_meta("ai_hooked", true)
+		p.finished.connect(func() -> void: _next_voice(p))
+	if not p.playing:
+		_next_voice(p)
+
+
+func _next_voice(p: AudioStreamPlayer3D) -> void:
+	if not is_instance_valid(p):
+		return
+	var q: Array = p.get_meta("ai_queue", [])
+	if q.is_empty():
+		return
+	p.stream = q.pop_front()
+	p.set_meta("ai_queue", q)
+	p.play()
+
+
+func clear_voice(p: AudioStreamPlayer3D) -> void:
+	if is_instance_valid(p):
+		p.set_meta("ai_queue", [])
+		p.stop()
+
+
 ## One dialogue turn. While the character "thinks", the game runs at 24 FPS (you're standing in
 ## a conversation anyway) so the AI gets most of the graphics card and answers much faster.
 func talk(req: Dictionary) -> Dictionary:
@@ -202,7 +336,7 @@ func load_voice(path: String) -> AudioStream:
 
 
 ## Plays a line on `node` in 3D with a subtitle over its head. Returns the line's length.
-func say_at(node: Node3D, text: String, audio: String, height := 2.1, pitch := 1.0, colour := Color(1.0, 0.95, 0.8)) -> float:
+func say_at(node: Node3D, text: String, audio: String, height := 2.1, pitch := 1.0, colour := Color(1.0, 0.95, 0.8), fx := "plain") -> float:
 	if not is_instance_valid(node) or text == "":
 		return 0.0
 	var dur := clampf(text.length() * 0.06, 1.5, 6.0)
@@ -210,7 +344,7 @@ func say_at(node: Node3D, text: String, audio: String, height := 2.1, pitch := 1
 	if stream:
 		var p := AudioStreamPlayer3D.new()
 		p.stream = stream
-		p.bus = "SFX"
+		p.bus = voice_bus(fx)
 		p.unit_size = 7.0
 		p.max_distance = 45.0
 		p.volume_db = 4.0

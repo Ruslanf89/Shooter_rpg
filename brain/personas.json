@@ -1,4 +1,31 @@
 {
+  "voice_version": 2,
+  "voice_profiles": {
+    "_doc": "Ukrainian voices (Piper). model: file in tools/voices; speaker: for the multi-speaker ukrainian_tts model (0 lada, 1 mykyta, 2 tetiana); length: slower > 1 > faster; noise / noise_w: expressiveness; pitch: played higher/lower in the game; fx: sound effect in the game (plain, priest, gruff, captain, kobold, cult). English uses the Windows voice in 'en'.",
+    "aldric":    {"model": "uk_UA-oleksa-high.onnx", "length": 1.2, "noise": 0.42, "noise_w": 0.55, "pitch": 0.9, "fx": "priest", "en": "m_old"},
+    "maybell":   {"model": "uk_UA-tetiana-high.onnx", "length": 0.86, "noise": 0.78, "noise_w": 1.05, "pitch": 1.04, "fx": "plain", "en": "f"},
+    "brannock":  {"model": "uk_UA-ukrainian_tts-medium.onnx", "speaker": 1, "length": 1.06, "noise": 0.6, "noise_w": 0.7, "pitch": 0.82, "fx": "gruff", "en": "m_gruff"},
+    "vesper":    {"model": "uk_UA-mykyta-high.onnx", "length": 1.25, "noise": 0.5, "noise_w": 0.45, "pitch": 1.1, "fx": "plain", "en": "m_young"},
+    "bandit":    {"model": "uk_UA-ukrainian_tts-medium.onnx", "speaker": 1, "length": 0.94, "noise": 0.72, "noise_w": 0.9, "pitch": 0.94, "fx": "gruff", "en": "m_gruff"},
+    "captain":   {"model": "uk_UA-oleksa-high.onnx", "length": 1.14, "noise": 0.5, "noise_w": 0.6, "pitch": 0.76, "fx": "captain", "en": "m_gruff"},
+    "kobold":    {"model": "uk_UA-mykyta-high.onnx", "length": 0.8, "noise": 0.85, "noise_w": 1.1, "pitch": 1.45, "fx": "kobold", "en": "kid"},
+    "geomancer": {"model": "uk_UA-ukrainian_tts-medium.onnx", "speaker": 0, "length": 0.84, "noise": 0.8, "noise_w": 1.0, "pitch": 1.3, "fx": "kobold", "en": "kid"},
+    "cultist":   {"model": "uk_UA-oleksa-high.onnx", "length": 1.12, "noise": 0.35, "noise_w": 0.4, "pitch": 0.93, "fx": "cult", "en": "vil_m"},
+    "vil_m": [
+      {"model": "uk_UA-oleksa-high.onnx", "length": 1.0, "noise": 0.667, "noise_w": 0.8, "pitch": 1.0, "fx": "plain", "en": "vil_m"},
+      {"model": "uk_UA-ukrainian_tts-medium.onnx", "speaker": 1, "length": 1.02, "noise": 0.667, "noise_w": 0.8, "pitch": 0.97, "fx": "plain", "en": "vil_m"},
+      {"model": "uk_UA-oleksa-high.onnx", "length": 0.94, "noise": 0.75, "noise_w": 0.9, "pitch": 1.08, "fx": "plain", "en": "vil_m"}
+    ],
+    "vil_f": [
+      {"model": "uk_UA-tetiana-high.onnx", "length": 1.0, "noise": 0.667, "noise_w": 0.8, "pitch": 1.0, "fx": "plain", "en": "vil_f"},
+      {"model": "uk_UA-ukrainian_tts-medium.onnx", "speaker": 0, "length": 1.0, "noise": 0.667, "noise_w": 0.8, "pitch": 1.0, "fx": "plain", "en": "vil_f"},
+      {"model": "uk_UA-ukrainian_tts-medium.onnx", "speaker": 2, "length": 0.96, "noise": 0.7, "noise_w": 0.9, "pitch": 1.05, "fx": "plain", "en": "vil_f"}
+    ],
+    "kid": [
+      {"model": "uk_UA-mykyta-high.onnx", "length": 0.9, "noise": 0.8, "noise_w": 1.0, "pitch": 1.25, "fx": "plain", "en": "kid"},
+      {"model": "uk_UA-ukrainian_tts-medium.onnx", "speaker": 0, "length": 0.9, "noise": 0.8, "noise_w": 1.0, "pitch": 1.3, "fx": "plain", "en": "kid"}
+    ]
+  },
   "world_short": "Northvale: a medieval valley with the village of Ashford, an abbey, a farm, a kobold mine and a Red Bandana bandit camp. The player (called the Outsider) is a Ukrainian soldier who woke up here from the modern war; he has an AK rifle (a strange thunder-stick to locals) and some magic, and helps people.",
   "world": "Northvale is a sunny medieval valley with the village of Ashford, an old abbey, a vineyard, Stonefield Farm, a kobold mine in the hills and a bandit camp of the Red Bandanas. Wolves roam the woods, kobolds steal from the mine, cultists hide at the Old Tower. Technology is medieval, but villagers slowly learn new things from the player. The player is a Ukrainian soldier who suddenly woke up in this world after a battle in the trenches. He carries an AK rifle (a strange 'thunder-stick' to locals), knows some magic and helps people with their troubles. Nobody here has heard of Ukraine, phones or drones except VesPer.",
 

@@ -289,6 +289,22 @@ func show_dialogue(npc_name: String, npc_title: String, quest_title: String, tex
 	dlg_text.visible_ratio = 0.0
 	_dlg_t = 0.0
 	_dlg_dur = maxf(1.0, duration * 0.9)
+	set_dialogue_buttons(buttons)
+	dialogue.visible = true
+	bigmap_panel.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+## Streaming (AI) dialogue: the text grows while it's being written (no typewriter on top).
+func stream_dialogue_text(text: String) -> void:
+	dlg_text.text = text
+	_dlg_t = 1.0
+	_dlg_dur = 0.001
+	dlg_text.visible_ratio = 1.0
+
+
+## Replaces the reply buttons ([[text, Callable], ...]) without touching the text.
+func set_dialogue_buttons(buttons: Array) -> void:
 	for c in dlg_buttons.get_children():
 		dlg_buttons.remove_child(c)
 		c.queue_free()

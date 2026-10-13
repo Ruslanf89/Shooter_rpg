@@ -1874,8 +1874,9 @@ func ai_bark(event: String, chance := 1.0) -> void:
 	var r := await Brain.bark(AI_KINDS[type], event)
 	if not is_instance_valid(self) or (state == State.DEAD and event != "kill_player"):
 		return
-	var pitch: float = {"kobold": 1.35, "geomancer": 1.22, "captain": 0.86}.get(type, _ai_pitch)
-	Brain.say_at(self, r.get("text", ""), r.get("audio", ""), _height + 0.25, pitch, Color(1.0, 0.7, 0.55))
+	# the voice profile's pitch and effect, a little different for every bandit
+	var pitch: float = float(r.get("pitch", 1.0)) * (1.0 if boss else _ai_pitch)
+	Brain.say_at(self, r.get("text", ""), r.get("audio", ""), _height + 0.25, pitch, Color(1.0, 0.7, 0.55), str(r.get("fx", "plain")))
 
 
 ## Which family of sounds this creature makes.
