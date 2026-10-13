@@ -368,6 +368,9 @@ func prompt() -> String:
 
 func interact() -> void:
 	_talking = true
+	if Brain.active():
+		_ai_talk()
+		return
 	var key: String = ["kid_gun", "kid_world", "kid_play", "kid_follow"][randi() % 4]
 	if _activity == "sleep":
 		key = "kid_bedtime"

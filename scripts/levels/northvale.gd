@@ -42,12 +42,12 @@ func npcs() -> Array:
 		{"id": "aldric", "name": "Brother Aldric", "title": "Abbey Priest", "pos": ABBEY + Vector3(6.5, 0, 21), "yaw": 200, "model": "people/man2",
 			"colors": {"Shirt": Color(0.32, 0.24, 0.17), "Pants": Color(0.26, 0.2, 0.14), "Hair": Color(0.55, 0.52, 0.5)}},
 		{"id": "maybell", "name": "Farmer Maybell", "title": "Stonefield Farm", "pos": FARM + Vector3(2, 0, 3), "yaw": 160, "model": "people/woman_casual",
-			"colors": {"Shirt": Color(0.62, 0.42, 0.3), "Pants": Color(0.33, 0.3, 0.25), "Hair": Color(0.5, 0.32, 0.18)}},
+			"colors": {"Shirt": Color(0.36, 0.46, 0.33), "Pants": Color(0.3, 0.24, 0.18), "Hair": Color(0.5, 0.32, 0.18), "outfit": "apron"}},
 		{"id": "brannock", "name": "Sergeant Brannock", "title": "Northvale Guard", "pos": Vector3(8, 0, 43), "yaw": 200, "model": "people/adventurer",
 			"colors": {"LightGreen": Color(0.4, 0.45, 0.55), "Green": Color(0.22, 0.27, 0.38)}},
 		{"id": "vesper", "name": "VesPerFPV", "title": "FPV Pilot", "pos": VESPER, "yaw": 120, "model": "people/casual",
 			"colors": {"White": "print", "LightBlue": Color(0.06, 0.06, 0.07), "Red_Dark": Color(0.16, 0.16, 0.17), "Hair": Color(0.16, 0.1, 0.06), "Skin": Color(0.88, 0.68, 0.6)},
-			"face": "res://assets/textures/vesper_face.png", "pitch": 1.25},
+			"face": "res://assets/textures/vesper_face.png", "build": Vector3(1.22, 1.0, 1.18), "pitch": 1.25},
 	]
 
 

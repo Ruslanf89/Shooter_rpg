@@ -398,6 +398,8 @@ func _react_to_player(p: Player, pd: float) -> void:
 	if world.shots_fired > _last_shots and pd < 14.0:
 		bark("shots", 35.0)
 	_last_shots = world.shots_fired
+	if pd < 5.5:
+		_ai_greet()
 
 
 func _resume() -> void:
@@ -755,6 +757,9 @@ func interact() -> void:
 	if _dead or _activity == "knocked":
 		return
 	_talking = true
+	if Brain.active():
+		_ai_talk()
+		return
 	_say(_greeting_key(), _greeting_key() not in ["greet_wanted", "sleepy"])
 
 
@@ -836,6 +841,70 @@ func _end_talk() -> void:
 	# a villager stopped on the way somewhere carries on walking
 	if not _busy_with_danger() and _activity != "walk":
 		_arrive()
+
+
+# --------------------------------------------------------------------------- AI brain (Northvale)
+
+var _ai_greet_at := 0
+
+
+## Who this villager is, for the AI brain (the id is stable across visits: name + job).
+func ai_info() -> Dictionary:
+	return {"npc": "ashford_%s_%s" % [vname, job], "name": vname, "job": job, "personality": personality, "gender": _speaker()}
+
+
+## The shout pool for this villager's kind ("vil:<personality>:<m|f>", children "vil:kid:kid").
+func ai_kind() -> String:
+	return "vil:kid:kid" if _speaker() == "kid" else "vil:%s:%s" % [personality, gender]
+
+
+func ai_say(text: String, audio: String) -> float:
+	return Brain.say_at(self, text, audio, 1.35 if _speaker() == "kid" else 1.95, voice_pitch, Color(0.9, 0.95, 1.0))
+
+
+func ai_free() -> bool:
+	return not _dead and not _talking and _activity not in ["knocked", "sleep", "flee", "hide", "fight"]
+
+
+## A greeting written by the AI when the player walks past (every couple of minutes at most).
+func _ai_greet() -> void:
+	var now := Time.get_ticks_msec()
+	if now < _ai_greet_at or not ai_free() or not Brain.can_bark():
+		return
+	_ai_greet_at = now + randi_range(90000, 180000)
+	var r := await Brain.bark(ai_kind(), "greet_night" if world.day_night.is_night() else "greet_day")
+	if is_instance_valid(self) and ai_free():
+		ai_say(r.get("text", ""), r.get("audio", ""))
+
+
+## A conversation through the AI brain: the villager answers in character, with three replies.
+func _ai_talk(said := "") -> void:
+	_play("talk")
+	world.player.input_locked = true
+	var leave := [Loc.t("Go away"), _leave]
+	world.hud.show_dialogue(vname, Loc.t(job), "", "…", [leave], 0.5)
+	var req := ai_info()
+	req["choice"] = said
+	req["ctx"] = world.ai_context()
+	var r := await Brain.talk(req)
+	if not is_instance_valid(self) or not _talking:
+		return
+	var s := Brain.load_voice(r.get("audio", ""))
+	var dur := 3.0
+	if s:
+		_voice.stream = s
+		_voice.pitch_scale = voice_pitch
+		_voice.play()
+		dur = s.get_length() / voice_pitch
+	var buttons := []
+	for c in r.get("choices", []):
+		var reply: String = c
+		buttons.append([reply, func() -> void: _ai_talk(reply)])
+	if _speaker() != "kid":
+		buttons.append([Loc.t("Need help?"), _help])
+		buttons += _extra_topics()
+	buttons.append(leave)
+	world.hud.show_dialogue(vname, Loc.t(job), "", r.get("line", "…"), buttons, dur)
 
 
 func speak(line_id: String) -> float:

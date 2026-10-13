@@ -221,6 +221,12 @@ const FLANKERS := ["wolf", "snow_wolf", "hellhound", "raptor", "gnoll", "gnoll_b
 const COWARDS := ["bandit", "cap_bandit", "kobold", "gnoll", "cultist", "flame_cultist", "pirate", "geomancer", "gnoll_shaman"]
 var tactics: Tactics
 var _tactic_t := randf_range(0.5, 2.0)
+
+# AI brain shouts (Northvale): which personality speaks for this enemy, and how high its voice is
+const AI_KINDS := {"bandit": "bandit", "cap_bandit": "bandit", "captain": "captain", "kobold": "kobold", "geomancer": "geomancer", "cultist": "cultist"}
+var _ai_pitch := randf_range(0.92, 1.06)
+var _ai_hurt_said := false
+var _ai_taunt_t := randf_range(6.0, 14.0)
 var _coward := false
 var _covered := false
 var _cover_t := 0.0
@@ -1471,6 +1477,10 @@ func _physics_process(delta: float) -> void:
 
 ## Gave up the chase: run home, heal to full, ignore damage until back.
 func _evade() -> void:
+	if state == State.CHASE:
+		ai_bark("flee", 0.7)
+		if AI_KINDS.has(type):
+			Brain.event("flee", "", {"mob": AI_KINDS[type]})
 	state = State.RETURN
 	_end_attack()
 	_slam_t = -1.0
@@ -1536,6 +1546,11 @@ func _chase(delta: float, player: Node3D, to_p: Vector3, dist: float) -> Vector3
 		_update_attack(delta, player, dist)
 		return Vector3.ZERO
 	_tactic_tick(delta, player, dist)
+	_ai_taunt_t -= delta
+	if _ai_taunt_t <= 0.0:
+		_ai_taunt_t = randf_range(9.0, 18.0)
+		if dist < 25.0 and _has_los:
+			ai_bark("taunt", 0.6)
 	var tv := _tactic_move(delta, player, dist)
 	if tv != Vector3.INF:
 		return tv
@@ -1755,6 +1770,9 @@ func npc_damage(amount: float, attacker: Node3D) -> void:
 		return
 	hp -= amount
 	_hurt_t = 0.15
+	if not _ai_hurt_said and hp > 0.0 and hp < max_hp * 0.4:
+		_ai_hurt_said = true
+		ai_bark("hurt", 0.8)
 	_update_bar()
 	world.damage_number(global_position + Vector3(0, _height, 0), amount, "bullet")
 	if not neutral or world.wanted_stars == 0:
@@ -1835,6 +1853,10 @@ func aggro() -> void:
 	if state != State.IDLE:
 		return
 	state = State.CHASE
+	if boss:
+		ai_bark("boss_intro", 1.0)
+	else:
+		ai_bark("aggro", 0.55)
 	var v := voice()
 	if v == "human":
 		Game.play_sound("enemy_yell", global_position, -4.0, 0.75 if boss else 1.0)
@@ -1843,6 +1865,17 @@ func aggro() -> void:
 	for e in get_tree().get_nodes_in_group("enemies"):
 		if e != self and (e as Node3D).global_position.distance_to(global_position) < 12.0 and e.neutral == neutral:
 			e.call_deferred("aggro")
+
+
+## A short voiced shout from the AI brain (Northvale mobs): spotted you, hurt, fleeing, taunts...
+func ai_bark(event: String, chance := 1.0) -> void:
+	if not AI_KINDS.has(type) or randf() > chance or not Brain.can_bark():
+		return
+	var r := await Brain.bark(AI_KINDS[type], event)
+	if not is_instance_valid(self) or (state == State.DEAD and event != "kill_player"):
+		return
+	var pitch: float = {"kobold": 1.35, "geomancer": 1.22, "captain": 0.86}.get(type, _ai_pitch)
+	Brain.say_at(self, r.get("text", ""), r.get("audio", ""), _height + 0.25, pitch, Color(1.0, 0.7, 0.55))
 
 
 ## Which family of sounds this creature makes.
@@ -1941,6 +1974,9 @@ func take_damage(amount: float, hit_pos: Vector3, dir: Vector3, kind := "bullet"
 			return false
 	hp -= amount
 	_hurt_t = 0.15
+	if not _ai_hurt_said and hp > 0.0 and hp < max_hp * 0.4:
+		_ai_hurt_said = true
+		ai_bark("hurt", 0.8)
 	if dir.length_squared() > 0.01:
 		_last_hit_dir = dir.normalized()
 	if anim and _anim_map.has("hit") and _attack_t < 0.0 and _hit_t <= 0.0 and kind != "frost" and kind != "fire":

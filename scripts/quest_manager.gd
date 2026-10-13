@@ -174,6 +174,9 @@ func complete(id: String) -> void:
 	Game.stinger("complete")
 	world.hud.show_quest_complete(q["title"], xp)
 	world.hero_t = maxf(world.hero_t, 300.0)
+	var giver := turn_in_npc(q)
+	world.ai_villagers_react("react_quest", 2.0)
+	Brain.event("quest_done", "The Outsider helped %s with '%s'" % [npcs[giver].display_name if npcs.has(giver) else giver, q["title"]], {"npc": giver, "importance": 2})
 	if LESSONS.has(id):
 		var teacher := turn_in_npc(q)
 		var tname: String = Loc.t(npcs[teacher].display_name) if npcs.has(teacher) else teacher

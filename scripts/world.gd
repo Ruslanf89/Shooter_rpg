@@ -167,6 +167,7 @@ func _ready() -> void:
 			g.cap_color = n.get("cap", Color(0, 0, 0, 0))
 			g.voice_pitch = n.get("pitch", 1.0)
 			g.head_height = n.get("head", 1.62)
+			g.body_scale = n.get("build", Vector3.ONE)
 			var np: Vector3 = n["pos"]
 			add_child(g)
 			g.global_position = Vector3(np.x, ground(np.x, np.z), np.z)
@@ -242,6 +243,8 @@ func _process(delta: float) -> void:
 	_process_weather(delta)
 	_process_night(delta)
 	_process_roamer(delta)
+	_process_ai_village(delta)
+	_process_ai_prefetch(delta)
 	_music_t -= delta
 	if _music_t <= 0.0:
 		_music_t = 1.0
@@ -499,6 +502,9 @@ func interact() -> void:
 # --------------------------------------------------------------------------- dialogue
 
 func talk(npc: QuestGiver) -> void:
+	if Brain.active():
+		_ai_talk(npc)
+		return
 	_talking = npc
 	# replies every conversation can have: travel quests, trading
 	var extra: Array = journey.options_for(npc.id, npc) if journey else []
@@ -528,6 +534,76 @@ func talk(npc: QuestGiver) -> void:
 	if not QuestManager.dialogue().get("lines", {}).has(line):
 		line = "shop_hello_" + ("f" if npc.model_file.begins_with("people/woman") else "m")
 	_say(npc, line, "", extra + [leave])
+
+
+## The situation the AI brains see: time of day, weather, where the player is.
+func ai_context() -> Dictionary:
+	var tod := "day"
+	if day_night:
+		var h: float = day_night.hour
+		tod = "night" if day_night.is_night() else ("morning" if h < 11.0 else ("afternoon" if h < 17.0 else "evening"))
+	var place := Loc.t(Game.current_level()["name"])
+	var best := 1e9
+	var p2 := Vector2(player.global_position.x, player.global_position.z) if player else Vector2.ZERO
+	for lm in landmarks:
+		var d: float = p2.distance_to(lm["pos"]) - float(lm["radius"])
+		if d < 25.0 and d < best:
+			best = d
+			place = lm["name"]
+	return {"time": tod, "weather": weather, "place": place, "player_level": int(Game.progress.get("level", 1))}
+
+
+## Talking with a quest giver through the AI brain: the NPC answers in character, three replies
+## written by the AI, plus the real quest buttons (accept / complete), trade and leave.
+func _ai_talk(npc: QuestGiver, said := "") -> void:
+	_talking = npc
+	player.input_locked = true
+	var buttons_quest := []
+	var api_quest := {}
+	var quest_title := ""
+	var q := quests.ready_for(npc.id)
+	if not q.is_empty():
+		var qid: String = q["id"]
+		quest_title = q["title"]
+		api_quest = {"state": "done", "title": q["title"], "text": QuestManager.line_text(Loc.line(q["lines"]["done"]))}
+		buttons_quest.append([Loc.t("Complete Quest"), func() -> void:
+			quests.complete(qid)
+			if not quests.available_for(npc.id).is_empty() and not finished:
+				_ai_talk(npc)
+			else:
+				end_dialogue()])
+	else:
+		q = quests.available_for(npc.id)
+		if not q.is_empty():
+			var qid: String = q["id"]
+			quest_title = q["title"]
+			api_quest = {"state": "offer", "title": q["title"], "text": QuestManager.line_text(Loc.line(q["lines"]["offer"]))}
+			buttons_quest.append([Loc.t("Accept"), func() -> void:
+				quests.accept(qid)
+				end_dialogue()])
+		else:
+			q = quests.active_for(npc.id)
+			if not q.is_empty():
+				api_quest = {"state": "active", "title": q["title"], "text": QuestManager.line_text(Loc.line(q["lines"]["offer"]))}
+	var extra: Array = journey.options_for(npc.id, npc) if journey else []
+	if npc.role == "trader":
+		extra.append([Loc.t("Trade"), func() -> void:
+			end_dialogue()
+			open_shop(npc)])
+	var leave := [Loc.t("Go away"), end_dialogue]
+	hud.show_dialogue(npc.display_name, Loc.t(npc.title), Loc.t(quest_title), "…", [leave], 0.5)
+	var r := await Brain.talk({"npc": npc.id, "choice": said, "quest": api_quest, "ctx": ai_context()})
+	if _talking != npc:
+		return       # walked away while the NPC was thinking
+	var line: String = r.get("line", "")
+	if line == "":
+		line = "…"
+	var dur := npc.speak_stream(Brain.load_voice(r.get("audio", "")))
+	var buttons := []
+	for c in r.get("choices", []):
+		var reply: String = c
+		buttons.append([reply, func() -> void: _ai_talk(npc, reply)])
+	hud.show_dialogue(npc.display_name, Loc.t(npc.title), Loc.t(quest_title), line, buttons + buttons_quest + extra + [leave], dur)
 
 
 ## A trader's shop window (their stock is kept while you're in the location).
@@ -917,6 +993,7 @@ func _on_enemy_died(e: Enemy) -> void:
 		player.health = minf(player.max_health, player.health + heal)
 	_drop_loot(e)
 	quests.on_enemy_killed(e)
+	_ai_on_kill(e)
 	if journey:
 		journey.on_enemy_killed(e)
 	if e.has_meta("spawn") and not e.boss:
@@ -937,6 +1014,133 @@ func _on_enemy_died(e: Enemy) -> void:
 		add_child(potion)
 		var pp := base + Vector3(0.9, 0, 0.6)
 		potion.global_position = pp + Vector3(0, ground(pp.x, pp.z), 0)
+
+
+## The AI brains hear about kills: mobs remember how many of their kind fell, a comrade nearby
+## shouts, a dead boss becomes news.
+func _ai_on_kill(e: Enemy) -> void:
+	if not Brain.active():
+		return
+	if Enemy.AI_KINDS.has(e.type):
+		Brain.event("kill", "", {"mob": Enemy.AI_KINDS[e.type]})
+		_ai_mob_bark("ally_down", e.global_position, 20.0, Enemy.AI_KINDS[e.type])
+	if e.boss:
+		Brain.event("boss", "The Outsider killed %s" % e.display_name, {"importance": 3})
+		ai_villagers_react("react_boss", 3.0)
+
+
+var _ai_chat_t := 25.0
+var _ai_chatting := false
+var _ai_pre_t := 0.0
+var _ai_pre_done := {}      # who -> time their greeting was last prepared
+
+
+## What the AI should know about a quest giver's quest right now (same as in _ai_talk).
+func _ai_quest_info(npc: QuestGiver) -> Dictionary:
+	var q := quests.ready_for(npc.id)
+	if not q.is_empty():
+		return {"state": "done", "title": q["title"], "text": QuestManager.line_text(Loc.line(q["lines"]["done"]))}
+	q = quests.available_for(npc.id)
+	if not q.is_empty():
+		return {"state": "offer", "title": q["title"], "text": QuestManager.line_text(Loc.line(q["lines"]["offer"]))}
+	q = quests.active_for(npc.id)
+	if not q.is_empty():
+		return {"state": "active", "title": q["title"], "text": QuestManager.line_text(Loc.line(q["lines"]["offer"]))}
+	return {}
+
+
+## Walking up to someone: their greeting is written ahead, so it's ready when you press F.
+func _process_ai_prefetch(delta: float) -> void:
+	if not Brain.active():
+		return
+	_ai_pre_t -= delta
+	if _ai_pre_t > 0.0 or hud.dialogue.visible:
+		return
+	_ai_pre_t = 0.75
+	var now := Time.get_ticks_msec()
+	var pp := player.global_position
+	for id in quests.npcs:
+		var npc: QuestGiver = quests.npcs[id]
+		if is_instance_valid(npc) and npc.global_position.distance_to(pp) < 10.0 and now - int(_ai_pre_done.get(id, -999999)) > 90000:
+			_ai_pre_done[id] = now
+			Brain.call_api("/talk", {"npc": id, "prefetch": true, "quest": _ai_quest_info(npc), "ctx": ai_context()}, 120.0)
+			return
+	for v in _ai_villagers_near(6.0):
+		var info: Dictionary = v.ai_info()
+		if now - int(_ai_pre_done.get(info["npc"], -999999)) > 120000:
+			_ai_pre_done[info["npc"]] = now
+			info["prefetch"] = true
+			info["ctx"] = ai_context()
+			Brain.call_api("/talk", info, 120.0)
+			return
+
+
+func _ai_villagers_near(radius: float) -> Array:
+	var near := []
+	for v in get_tree().get_nodes_in_group("villagers") + get_tree().get_nodes_in_group("kids"):
+		if v.has_method("ai_free") and v.ai_free() and (v as Node3D).global_position.distance_to(player.global_position) < radius:
+			near.append(v)
+	near.shuffle()
+	return near
+
+
+## Now and then two villagers near the player talk with each other (overheard, AI brain).
+func _process_ai_village(delta: float) -> void:
+	if not Brain.active() or _ai_chatting:
+		return
+	_ai_chat_t -= delta
+	if _ai_chat_t > 0.0:
+		return
+	_ai_chat_t = randf_range(30.0, 55.0)
+	if hud.dialogue.visible:
+		return
+	var near := _ai_villagers_near(22.0)
+	for i in near.size():
+		for j in range(i + 1, near.size()):
+			if (near[i] as Node3D).global_position.distance_to((near[j] as Node3D).global_position) < 7.0:
+				_ai_chat(near[i], near[j])
+				return
+
+
+func _ai_chat(a: Node, b: Node) -> void:
+	_ai_chatting = true
+	var r := await Brain.chat(a.ai_info(), b.ai_info(), ai_context())
+	for l in r.get("lines", []):
+		var v: Node = a if l.get("who", "a") == "a" else b
+		if not is_instance_valid(v) or not v.ai_free():
+			break
+		var dur: float = v.ai_say(l.get("text", ""), l.get("audio", ""))
+		await get_tree().create_timer(dur + 0.35).timeout
+	_ai_chatting = false
+
+
+## One or two villagers near the player react to news: a boss slain, a quest done, a crime, a raid.
+func ai_villagers_react(event: String, delay := 1.2) -> void:
+	if not Brain.active():
+		return
+	await get_tree().create_timer(delay).timeout
+	for v in _ai_villagers_near(30.0).slice(0, 2):
+		var r := await Brain.bark(v.ai_kind(), event)
+		if is_instance_valid(v) and v.ai_free():
+			await get_tree().create_timer(v.ai_say(r.get("text", ""), r.get("audio", "")) + 0.4).timeout
+
+
+## The nearest fighting mob (of `kind`, if given) around `pos` shouts about `event`.
+func _ai_mob_bark(event: String, pos: Vector3, radius: float, kind := "") -> void:
+	var best: Enemy = null
+	var bd := radius
+	for n in get_tree().get_nodes_in_group("enemies"):
+		var en := n as Enemy
+		if en == null or en.state != Enemy.State.CHASE or not Enemy.AI_KINDS.has(en.type):
+			continue
+		if kind != "" and Enemy.AI_KINDS[en.type] != kind:
+			continue
+		var d := en.global_position.distance_to(pos)
+		if d < bd:
+			bd = d
+			best = en
+	if best:
+		best.ai_bark(event, 0.85)
 
 
 ## Enemy level for a spot: low near the player's start, highest far away; zone range from Game.
@@ -1197,6 +1401,9 @@ func _process_roamer(delta: float) -> void:
 
 ## Called when the player hurts (1), badly hurts (2) or kills (3) a villager or guard.
 func report_crime(severity: int, pos: Vector3) -> void:
+	if severity >= 2:
+		Brain.event("crime", "The Outsider attacked a villager of Ashford", {"importance": 3})
+		ai_villagers_react("react_crime", 2.5)
 	if OS.has_environment("SHOT_MODE"):
 		print("CRIME ", severity, " from ", get_stack())
 	var old := wanted_stars
@@ -1280,6 +1487,8 @@ func _level_cleared() -> void:
 
 func _on_player_died() -> void:
 	Game.stinger("death")
+	_ai_mob_bark("kill_player", player.global_position, 30.0)
+	Brain.event("player_down", "The Outsider was beaten in a fight", {"importance": 1})
 	# dying costs a tenth of your gold (a fifth when the guards were after you)
 	var fine := int(int(Game.inventory.get("gold", 0)) * (0.2 if wanted_stars > 0 else 0.1))
 	Game.inventory["gold"] = int(Game.inventory.get("gold", 0)) - fine

@@ -37,7 +37,7 @@ func npcs() -> Array:
 		{"id": "sila", "name": "Ranger Sila", "title": "Ranger of the Pass", "pos": LAKE + Vector3(19, 0, -8), "yaw": 240, "model": "people/woman_casual", "colors": {"Shirt": Color(0.28, 0.4, 0.34), "Pants": Color(0.3, 0.25, 0.2), "Hair": Color(0.15, 0.1, 0.07)}},
 		{"id": "vesper", "name": "VesPerFPV", "title": "FPV Pilot", "pos": Vector3(-10, 0, -206), "yaw": 160, "model": "people/casual",
 			"colors": {"White": "print", "LightBlue": Color(0.06, 0.06, 0.07), "Red_Dark": Color(0.16, 0.16, 0.17), "Hair": Color(0.16, 0.1, 0.06), "Skin": Color(0.88, 0.68, 0.6)},
-			"face": "res://assets/textures/vesper_face.png", "pitch": 1.25},
+			"face": "res://assets/textures/vesper_face.png", "build": Vector3(1.22, 1.0, 1.18), "pitch": 1.25},
 	]
 
 

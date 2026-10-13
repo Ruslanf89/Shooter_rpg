@@ -166,8 +166,8 @@ func _build_buttons() -> void:
 	if not save.is_empty():
 		var li := clampi(int(save.get("level_index", 0)), 0, Game.LEVELS.size() - 1)
 		var lvl := int(save.get("progress", {}).get("level", 1))
-		_add(col, Loc.t("Continue"), func() -> void: _go(Game.continue_game), "%s  ·  %s %d" % [Loc.t(Game.LEVELS[li]["name"]), Loc.t("Level"), lvl])
-	_add(col, Loc.t("New Game"), func() -> void: _go(Game.start_game))
+		_add(col, Loc.t("Continue"), func() -> void: _go_ai(Game.continue_game), "%s  ·  %s %d" % [Loc.t(Game.LEVELS[li]["name"]), Loc.t("Level"), lvl])
+	_add(col, Loc.t("New Game"), func() -> void: _go_ai(Game.start_game))
 	_add(col, Loc.t("Settings"), func() -> void:
 		var s := SettingsMenu.new()
 		add_child(s)
@@ -178,6 +178,16 @@ func _build_buttons() -> void:
 		a.closed.connect(func() -> void: _buttons[0].grab_focus()), "", true)
 	_add(col, Loc.t("Exit Game"), func() -> void: _go(Game.quit_game))
 	_buttons[0].grab_focus.call_deferred()
+	# the AI brain (Ollama + Qwen3 + Python) is needed to play: show how it's doing
+	_ai_label = Label.new()
+	_ai_label.add_theme_font_size_override("font_size", 18)
+	_ai_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	_ai_label.add_theme_constant_override("outline_size", 5)
+	_ai_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_ai_label.custom_minimum_size = Vector2(440, 0)
+	col.add_child(_ai_label)
+	_show_ai(Brain.status)
+	Brain.status_changed.connect(_show_ai)
 	# buttons fade in one after another
 	for i in _buttons.size():
 		var b := _buttons[i]
@@ -185,6 +195,27 @@ func _build_buttons() -> void:
 		var tw := b.create_tween()
 		tw.tween_interval(0.5 + i * 0.09)
 		tw.tween_property(b, "modulate:a", 1.0, 0.45)
+
+
+var _ai_label: Label
+
+
+func _show_ai(text: String) -> void:
+	if not is_instance_valid(_ai_label):
+		return
+	_ai_label.text = ("●  " if Brain.is_ready else "○  ") + text
+	_ai_label.add_theme_color_override("font_color", Color(0.55, 0.95, 0.55) if Brain.is_ready else Color(1.0, 0.75, 0.4))
+
+
+## Starting a game needs the AI brain; until it's ready the button only explains why.
+func _go_ai(action: Callable) -> void:
+	if Brain.is_ready:
+		_go(action)
+		return
+	_show_ai(Brain.status + "  -  " + Loc.t("the game needs the AI brain, please wait"))
+	var tw := _ai_label.create_tween()
+	tw.tween_property(_ai_label, "modulate", Color(1.6, 1.2, 0.8), 0.15)
+	tw.tween_property(_ai_label, "modulate", Color.WHITE, 0.4)
 
 
 func _add(col: VBoxContainer, text: String, action: Callable, note := "", dim := false) -> Button:

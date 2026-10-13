@@ -303,6 +303,7 @@ func stop_ambience() -> void:
 
 func start_game() -> void:
 	start_game_state()
+	Brain.new_world()      # the AI brains forget the previous hero
 	if settings.get("cutscenes", true) and ResourceLoader.exists(INTRO_SCENE):
 		get_tree().paused = false
 		get_tree().change_scene_to_file(INTRO_SCENE)

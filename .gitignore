@@ -22,3 +22,9 @@ Thumbs.db
 desktop.ini
 .DS_Store
 *.blend1
+
+# --- AI brain runtime data (memory database, voice cache, local settings) ---
+/brain/cache/
+/brain/northvale.db
+/brain/config.json
+__pycache__/

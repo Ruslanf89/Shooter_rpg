@@ -17,6 +17,7 @@ var crown := false                  # the King
 var face_texture := ""             # optional photo face (res:// path)
 var cap_color := Color(0, 0, 0, 0) # alpha > 0 adds a flat cap
 var head_height := 1.62
+var body_scale := Vector3.ONE       # e.g. VesPer is a chubby teenager: wider, same height
 var voice_pitch := 1.0
 var role := "quest"              # "quest" or "trader" (opens the shop)
 
@@ -80,6 +81,7 @@ func _ready() -> void:
 func _build_model() -> void:
 	if model_file.begins_with("people/"):
 		var built := People.build(_visual, model_file, colors, head_height)
+		_visual.scale = body_scale
 		if not built.is_empty():
 			anim = built["anim"]
 			_idle = "Idle"
@@ -261,6 +263,21 @@ func speak(line_id: String) -> float:
 		if _idle != "":
 			anim.queue(_idle)
 	return stream.get_length() / pitch
+
+
+## Plays a generated line (AI brain). Returns its length in seconds.
+func speak_stream(stream: AudioStream) -> float:
+	if stream == null:
+		return 3.0
+	voice.stream = stream
+	voice.pitch_scale = voice_pitch
+	voice.play()
+	var ta := _find_anim(["Wave", "Interact", "Man_Clapping", "Female_Clapping"])
+	if ta != "":
+		anim.play(ta, 0.2)
+		if _idle != "":
+			anim.queue(_idle)
+	return stream.get_length() / voice_pitch
 
 
 func stop_speaking() -> void:

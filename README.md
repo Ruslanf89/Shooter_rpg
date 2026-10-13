@@ -187,6 +187,45 @@ Delete the `ExampleLantern_DeleteMe` node when you start. If you change a level 
   - **Forge** (in every smithy): weapons and armor of your level in the quality you choose (better quality costs essences; Legendary needs all three rare materials), plus upgrading an item's quality and rerolling its bonuses.
 - **New keys:** **H** health potion (or bandage), **J** mana potion, **B** use gadget, **N** next gadget, **U** crafting.
 
+## AI personalities in Northvale (newest)
+The first location's people and monsters are driven by a local AI.
+- **Ollama** runs the **Qwen3 8B** model on this PC.
+- **The Python "brain"** (`brain/`) writes the lines.
+- **SQLite** (`brain/northvale.db`) remembers.
+- **Piper** (Ukrainian) and the Windows voices (English) speak every line.
+
+**The AI is required to play.** The main menu shows the brain's status, and New Game / Continue wait until it says *AI brain ready*. The game starts Ollama and the brain by itself.
+
+- **Characters** (edit them in `brain/personas.json`):
+  - **Brother Aldric:** a secretive zealot who calls your rifle a devil's tool.
+  - **Farmer Maybell:** an anxious mother of two who worries about everything.
+  - **Sergeant Brannock:** a gruff veteran who talks soldier to soldier.
+  - **VesPer:** a chubby, yawning teenager who plays piano and accordion, keeps trying to sell his drone, and always says he'll quit FPV. His body is wider now, in every location.
+  - **Mobs:** swaggering Red Bandana thugs and their cruel Captain, cowardly kobold pranksters, and brainwashed cultists, ex-villagers who sometimes break through.
+  - **Ashford villagers and kids:** they keep their personality types (kind, brave, coward, gossip, grumpy, superstitious).
+- **Talking:**
+  - Every quest giver, villager and kid answers in character, with 3 reply choices written by the AI. Quests, trading and *Go away* stay as buttons.
+  - Quest offers and thank-yous are said in each character's own words, keeping the facts.
+  - While someone "thinks", the game drops to 24 FPS so the AI gets the graphics card.
+  - Greetings are written ahead while you walk up, so they're usually instant.
+- **The valley talks:**
+  - Villagers greet you as you pass, and chat with each other where you can overhear.
+  - They react to bosses slain, quests done, crimes and raids.
+  - Mobs shout in fights: spotting you, taunts, badly hurt, fleeing, a comrade down, the Captain's threats. These come from pools written ahead, so they're instant.
+- **Memory:**
+  - Each NPC remembers your conversations, summarised as you go.
+  - Each has trust, fear and affection towards you, plus the village's overall opinion.
+  - Events become gossip.
+  - Each mob kind gets angry, then afraid, as you kill more of them.
+  - A **New Game** wipes the memory; shout pools are kept.
+- **Performance** (RTX 5060 8 GB):
+  - 26 of the model's 36 layers run on the GPU, so the game keeps about 60–100 FPS.
+  - Replies take about 8–15 s while playing.
+  - The first start pre-writes about 110 shout pools, which takes about 15 minutes in the menu; after that they're saved.
+  - Change `gpu_layers` in `brain/config.json`: higher is faster AI but less room for the game.
+- **Comparing models:** `python brain/compare.py uk qwen3:4b qwen3:8b` runs the same Northvale moments through both. qwen3:4b was faster but its Ukrainian was often broken.
+- **Sharing a build:** players need Python 3.12 and Ollama with `qwen3:8b` installed. The `brain` folder goes next to the exe, without `cache/`, `northvale.db` and `config.json`.
+
 ## Version control (git + GitHub)
 - The project is a git repository, published to a **private** GitHub repo with GitHub Desktop. Open GitHub Desktop to see every change, commit, and **Push origin** to back it up online.
 - **Not in git** (see `.gitignore`):
