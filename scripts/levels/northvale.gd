@@ -196,7 +196,7 @@ func _abbey(w: Node3D, o: Vector3) -> void:
 	var n := Props.pivot(w, o)
 
 	# the abbey church: its west front faces the courtyard, the rest runs back behind it
-	GothicChurch.build(w, o + Vector3(0, 0, 6.0 * S))
+	GothicChurch.place(w, o + Vector3(0, 0, 6.0 * S))
 	w.building_areas.append([Vector2(o.x, o.z), 13.0])
 
 	# square bell tower (front-left)

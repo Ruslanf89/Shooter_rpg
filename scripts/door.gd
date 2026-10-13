@@ -3,12 +3,12 @@ extends Node3D
 ## Hinged plank door. This node is the hinge (at floor level); the slab is an AnimatableBody3D
 ## child so it blocks the player and creatures when closed. Press F to open / close.
 
-var width := 1.2
-var height := 2.2
-var open_angle := 105.0       # degrees; positive swings towards -z (into the house)
+@export var width := 1.2
+@export var height := 2.2
+@export var open_angle := 105.0       # degrees; positive swings towards -z (into the house)
 var is_open := false
-var style := "plank"          # "iron": a wrought-iron gate leaf (railings, churchyards)
-var start_open := false
+@export var style := "plank"          # "iron": a wrought-iron gate leaf (railings, churchyards)
+@export var start_open := false
 var _slab: AnimatableBody3D
 var _shape: CollisionShape3D
 var _busy := false

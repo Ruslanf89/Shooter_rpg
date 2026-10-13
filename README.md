@@ -257,6 +257,25 @@ Northvale Abbey's old hall is now a real gothic abbey church, after Salisbury Ca
 - Built from extruded pointed-arch outlines merged into one mesh per material, so it costs almost nothing in FPS. Interior details are only drawn within 120 m.
 - Iron gates are `HouseDoor`s with `style = "iron"` (and `start_open`).
 
+### Editing the church yourself (in Godot)
+The church is a normal scene: **`scenes/buildings/abbey_church.scn`**. Double-click it in the FileSystem panel.
+- **Parts:** it is split into named parts, so you can click one and move (W), rotate (E) or scale (R) it, copy it (Ctrl+D), delete it, or hide it (eye icon).
+  - West front: centre wall, lancets, gable, rose window, portal, side walls, blind doors, turrets, doors.
+  - Nave and Choir: aisle walls, windows, arcade arches, clerestory.
+  - North and South transept: walls, windows, gable, rose window.
+  - East end.
+  - Tower: faces, pinnacles, spire.
+  - Buttresses, Piers, Roofs, Vaults.
+  - Interior: floor, carpet, each pew, choir stalls, altar, reredos, font, each chandelier, candles, light pools.
+- **Body:** a part that holds other parts (a wall and its windows) keeps its own stones in a child called **Body**.
+- **Clicking:** clicking in the 3D view selects the whole part. To pick something inside a part, use the Scene tree.
+- **Window holes:** these are cut into the walls. Moving a window moves its glass and tracery, not the hole.
+- **Materials:** parts share their materials. Changing the stone in one place changes it everywhere. To change only one part, right-click its material and choose **Make Unique**.
+- **Your own models:** you can add your own models and lights anywhere in the scene.
+- **Doors:** the two main doors are only drawn when the game runs. In the editor they show as empty nodes under *West front/Doors*.
+- Save with Ctrl+S, then play. In the game the parts are merged back into a few meshes and one collision shape (the `AbbeyChurch` root does this), so editing costs no FPS. Hidden parts are left out.
+- **Rebuilding from code:** while this file exists, the game uses it and ignores `scripts/gothic_church.gd`. To rebuild the church from code, which throws your edits away, delete the file. Then open `scenes/editor/bake_church.tscn` and press **F6**. The bake never overwrites an existing church.
+
 ## Version control (git + GitHub)
 - The project is a git repository, published to a **private** GitHub repo with GitHub Desktop. Open GitHub Desktop to see every change, commit, and **Push origin** to back it up online.
 - **Not in git** (see `.gitignore`):
