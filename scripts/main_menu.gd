@@ -180,6 +180,7 @@ func _build_buttons() -> void:
 	_buttons[0].grab_focus.call_deferred()
 	# the AI brain (Ollama + Qwen3 + Python) is needed to play: show how it's doing
 	_ai_label = Label.new()
+	_ai_label.visible = Brain.ENABLED
 	_ai_label.add_theme_font_size_override("font_size", 18)
 	_ai_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	_ai_label.add_theme_constant_override("outline_size", 5)
@@ -209,7 +210,7 @@ func _show_ai(text: String) -> void:
 
 ## Starting a game needs the AI brain; until it's ready the button only explains why.
 func _go_ai(action: Callable) -> void:
-	if Brain.is_ready:
+	if Brain.is_ready or not Brain.ENABLED:
 		_go(action)
 		return
 	_show_ai(Brain.status + "  -  " + Loc.t("the game needs the AI brain, please wait"))

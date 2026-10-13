@@ -6,6 +6,9 @@ extends Node
 
 signal status_changed(text: String)
 
+## Off for now: the game uses its scripted, pre-voiced dialogue and doesn't start Ollama or Python.
+## Set to true to bring the AI personalities back.
+const ENABLED := false
 const URL := "http://127.0.0.1:8765"
 const AI_LEVELS := [0]          # locations that use the AI brains (Northvale for now)
 
@@ -26,10 +29,12 @@ func _ready() -> void:
 
 ## True while playing a location that uses the AI brains.
 func active() -> bool:
-	return is_ready and Game.level_index in AI_LEVELS
+	return ENABLED and is_ready and Game.level_index in AI_LEVELS
 
 
 func _process(delta: float) -> void:
+	if not ENABLED:
+		return
 	_bark_cd = maxf(0.0, _bark_cd - delta)
 	_poll_t -= delta
 	if _poll_t > 0.0:
