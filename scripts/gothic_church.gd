@@ -1153,13 +1153,7 @@ static func _interior(gi: Geo, m: Dictionary) -> void:
 	gi.part("Interior/Sanctuary/Altar cross")
 	gi.box(m["gold"], _t(Vector3(0, 2.4, az - 0.45)), Vector3(0.16, 2.0, 0.1))
 	gi.box(m["gold"], _t(Vector3(0, 2.85, az - 0.45)), Vector3(1.0, 0.16, 0.1))
-	# font by the door, in the south aisle
-	gi.part("Interior/Font")
-	var f := Vector3(7.2, 0, -4.4)
-	gi.cyl(trim, _t(f), 0.5, 0.5, 0.15, 8, true, false)
-	gi.cyl(m["stone"], _t(f + Vector3(0, 0.15, 0)), 0.22, 0.28, 0.5, 8, true, false)
-	gi.cyl(m["stone"], _t(f + Vector3(0, 0.65, 0)), 0.65, 0.4, 0.4, 8, true, false)
-	gi.cyl(MeshKit.mat(Color(0.25, 0.45, 0.6), 0.1, 0.2), _t(f + Vector3(0, 1.0, 0)), 0.55, 0.55, 0.02, 8)
+
 
 
 static func _vaults(gi: Geo, m: Dictionary) -> void:
@@ -1241,6 +1235,19 @@ static func _fittings(root: Node3D, m: Dictionary) -> void:
 	Buildings.fade(al, 60.0)
 	al.position = Vector3(0, 5.0, -2.2)
 	cn.add_child(al)
+	# statues: a garden statue by the door (south aisle), an angel and a girl with an amphora at
+	# the ends of the transepts, all turned towards the middle of the church
+	var trim: Material = m["trim"]
+	_statue(root, "Interior/Statues/Garden statue", "res://assets/models/statues/garden_statue.glb",
+		Vector3(7.2, 0.04, -4.4), -90.0, Vector3(0.8, 1.6, 0.8))
+	var angel := _statue(root, "Interior/Statues/Cemetery angel", "res://assets/models/statues/cemetery_angel.glb",
+		Vector3(TRANS_IN - 3.6, 0.0, CROSS_Z), -90.0, Vector3(2.2, 4.2, 2.6), 0.1, 1.4)
+	MeshKit.box(angel, Vector3(2.8, 0.18, 3.2), Vector3(0, 0.09, 0), trim)
+	var girl := _statue(root, "Interior/Statues/Girl with amphora", "res://assets/models/statues/girl_amphora.scn",
+		Vector3(-(TRANS_IN - 3.6), 0.0, CROSS_Z), 90.0, Vector3(1.9, 3.8, 1.9), -1.0, 1.4)
+	MeshKit.box(girl, Vector3(1.9, 0.9, 1.9), Vector3(0, 0.45, 0), trim)
+	MeshKit.box(girl, Vector3(2.1, 0.12, 2.1), Vector3(0, 0.06, 0), trim)
+	MeshKit.box(girl, Vector3(2.05, 0.12, 2.05), Vector3(0, 0.9, 0), trim)
 	# soft pools of coloured light under the aisle windows and in the nave (the glass, blurred)
 	var pools := node_at(root, "Interior/Light pools")
 	var small := glass_texture().get_image().duplicate() as Image
@@ -1271,3 +1278,29 @@ static func _fittings(root: Node3D, m: Dictionary) -> void:
 		dc.distance_fade_begin = 45.0
 		dc.distance_fade_length = 10.0
 		pools.add_child(dc, true)
+
+
+## A statue model under root at path (pivot on the floor, turned by yaw), with a box collider.
+## lift: how far up its base sits (negative: on a plinth that high, e.g. -1.0 = on a 0.96 m plinth);
+## a small positive lift sinks the model's scanned ground patch into the slab under it.
+static func _statue(root: Node3D, path: String, scene: String, pos: Vector3, yaw: float, size: Vector3, lift := 0.0, scale := 1.0) -> Node3D:
+	var holder := node_at(root, path)
+	holder.position = pos
+	holder.rotation_degrees.y = yaw
+	holder.set_meta("_edit_group_", true)
+	var model := (load(scene) as PackedScene).instantiate() as Node3D
+	model.name = "Model"
+	model.position.y = 0.96 if lift < 0.0 else -lift
+	model.scale = Vector3.ONE * scale
+	holder.add_child(model)
+	var body := StaticBody3D.new()
+	body.name = "Collision"
+	body.set_meta("surface", "stone")
+	var cs := CollisionShape3D.new()
+	var sh := BoxShape3D.new()
+	sh.size = size
+	cs.shape = sh
+	cs.position = Vector3(0, size.y * 0.5, 0)
+	body.add_child(cs)
+	holder.add_child(body)
+	return holder

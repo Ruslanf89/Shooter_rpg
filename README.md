@@ -249,7 +249,12 @@ Northvale Abbey's old hall is now a real gothic abbey church, after Salisbury Ca
 - **Inside:**
   - A tall nave with pointed arcades on clustered piers, a triforium (blind arcade), clerestory windows, and quadripartite rib vaults with ridge ribs and gilded bosses.
   - Vaulted aisles, crossing, transepts and choir.
-  - Pews, choir stalls, an altar with a carved reredos, a font by the door, iron chandeliers.
+  - Pews, choir stalls, an altar with a carved reredos, iron chandeliers.
+  - Statues (`assets/models/statues/`):
+    - A garden statue with a bowl stands by the door in the south aisle.
+    - A cemetery angel (on a stone slab) stands at the end of the south transept.
+    - A kneeling girl with an amphora (on a stone plinth) stands at the end of the north transept.
+    - Each has a collider. They are parts under *Interior/Statues*: move or scale them like any other part.
   - Soft pools of coloured light on the floor.
 - **Stained glass** (`shaders/stained_glass.gdshader`, glass pattern generated in code) glows when you're inside, and looks dark and glossy from outside, as real stained glass does by day.
 - **Railings** (`scripts/iron_fence.gd`, after the Victorian fence reference): a red-brick plinth with stone coping, brick piers with stone caps, and iron spear bars. They replace the courtyard walls, with a scrolled double iron gate (opens with F, starts open).

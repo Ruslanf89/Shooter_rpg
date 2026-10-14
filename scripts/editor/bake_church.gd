@@ -29,7 +29,8 @@ func _ready() -> void:
 func _own(n: Node, root: Node) -> void:
 	for c in n.get_children():
 		c.owner = root
-		_own(c, root)
+		if c.scene_file_path.is_empty():      # an instanced model (statue) keeps its own insides
+			_own(c, root)
 
 
 func _count(n: Node) -> int:
