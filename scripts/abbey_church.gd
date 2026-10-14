@@ -16,13 +16,13 @@ func _ready() -> void:
 		_merge()
 
 
-## The stained glass glows only when seen from inside: tell it where the church stands now.
+## The glass and the walls tell inside from outside: tell them where the church stands now.
 func _fix_glass(n: Node) -> void:
 	for c in n.get_children():
 		if c is MeshInstance3D:
 			var m := (c as MeshInstance3D).material_override as ShaderMaterial
-			if m and m.shader and m.shader.resource_path.ends_with("stained_glass.gdshader"):
-				GothicChurch.set_glass_frame(m, global_transform)
+			if m and m.shader and (m.shader.resource_path.ends_with("stained_glass.gdshader") or m.shader.resource_path.ends_with("church_wall.gdshader")):
+				GothicChurch.set_frame(m, self)
 		_fix_glass(c)
 
 

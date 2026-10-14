@@ -369,7 +369,7 @@ static func pinnacle(g: Geo, m: Material, t: Transform3D, size: float, h: float)
 static func turret(g: Geo, m: Material, trim: Material, p: Vector3, r: float, h: float, spire: float) -> void:
 	g.cyl(m, Transform3D(Basis(), p), r, r, h, 8, true, false, PI / 8.0)
 	g.cyl(trim, Transform3D(Basis(), p + Vector3(0, h, 0)), r * 1.18, r * 1.18, 0.4, 8, false, false, PI / 8.0)
-	g.cyl(m, Transform3D(Basis(), p + Vector3(0, h + 0.4, 0)), r * 1.05, 0.0, spire, 8, false, false, PI / 8.0)
+	g.cyl(trim, Transform3D(Basis(), p + Vector3(0, h + 0.4, 0)), r * 1.05, 0.0, spire, 8, false, false, PI / 8.0)
 	for k in 3:
 		var y := h * (0.3 + 0.25 * k)
 		g.cyl(trim, Transform3D(Basis(), p + Vector3(0, y, 0)), r * 1.06, r * 1.06, 0.18, 8, false, false, PI / 8.0)
@@ -506,21 +506,39 @@ static func glass_material(root: Node3D) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	m.shader = load("res://shaders/stained_glass.gdshader")
 	m.set_shader_parameter("glass_tex", glass_texture())
-	set_glass_frame(m, root.global_transform if root.is_inside_tree() else Transform3D())
+	set_frame(m, root)
 	return m
 
 
-static func set_glass_frame(m: ShaderMaterial, church: Transform3D) -> void:
+## The walls: brick outside, the abbey's stone inside (church_wall.gdshader).
+static func wall_material(root: Node3D) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = load("res://shaders/church_wall.gdshader")
+	m.set_shader_parameter("out_tex", MeshKit.tex("AlleyBrick"))
+	m.set_shader_parameter("out_normal", MeshKit.normal_tex("AlleyBrick"))
+	m.set_shader_parameter("out_tint", Vector3(1.2, 1.08, 1.02))
+	m.set_shader_parameter("out_scale", 0.9)
+	m.set_shader_parameter("in_tex", MeshKit.tex("Bricks066"))
+	m.set_shader_parameter("in_normal", MeshKit.normal_tex("Bricks066"))
+	m.set_shader_parameter("in_tint", Vector3(1.126, 1.036, 0.887))
+	m.set_shader_parameter("in_scale", 0.252)
+	set_frame(m, root)
+	return m
+
+
+## Glass and walls tell inside from outside in church-local space: tell them where the church is.
+static func set_frame(m: ShaderMaterial, root: Node3D) -> void:
+	var church := root.global_transform if root.is_inside_tree() else Transform3D()
 	m.set_shader_parameter("to_local", Projection(church.affine_inverse()))
 
 
 static func _materials(root: Node3D) -> Dictionary:
 	return {
-		"stone": Props.stone(Color(1.12, 1.06, 0.94), 0.28),
+		"stone": wall_material(root),
 		"trim": Props.stone(Color(0.92, 0.88, 0.8), 0.28),
 		"inner": Props.stone(Color(1.08, 1.03, 0.95), 0.45),
 		"roof": MeshKit.textured("RoofingTiles013A", Color(0.8, 0.86, 0.98), 0.55, 0.35, 2.1),
-		"floor": Props.stone(Color(0.8, 0.78, 0.74), 0.55),
+		"floor": MeshKit.textured("Tiles060", Color(1, 1, 1), 0.28, 0.0, 0.92),
 		"dark": MeshKit.mat(Color(0.05, 0.05, 0.06)),
 		"gold": MeshKit.mat(Color(0.95, 0.75, 0.25), 0.4, 0.6),
 		"wood": Props.dark_wood(),
@@ -733,8 +751,15 @@ static func _west_front(g: Geo, m: Dictionary) -> void:
 	for s in [-1.0, 1.0]:
 		var side := "West front/%s side" % _side(s)
 		var o := op(s * 7.2, 1.4, 6.2, 9.4, 1.3)
+		var low := op(s * 7.2, 1.8, 1.0, 3.2, 1.1)
+		var x0 := minf(s * NAVE_OUT, s * 10.2)
+		var x1 := maxf(s * NAVE_OUT, s * 10.2)
 		g.part(side)
-		wall(g, st, t, minf(s * NAVE_OUT, s * 10.2), maxf(s * NAVE_OUT, s * 10.2), 0, 12.6, FRONT, [o])
+		wall(g, st, t, x0, x1, 0, 5.6, FRONT, [low])
+		wall(g, st, t, x0, x1, 5.6, 12.6, FRONT, [o])
+		g.part(side + "/Lower window")
+		fill(g, t, low, "two", m["glass"], trim)
+		g.box(trim, _t(Vector3(s * 7.2, 0.92, 0.1)), Vector3(2.3, 0.16, 0.3))
 		g.part(side + "/Window")
 		fill(g, t, o, "", m["glass"], trim)
 		g.extrude(trim, cross_frame(0), band(arch(s * 7.2, 9.4, 0.7, 1.3, 0.2), arch(s * 7.2, 9.4, 0.7, 1.3, 0.04)), 0.0, 0.14)
@@ -742,15 +767,10 @@ static func _west_front(g: Geo, m: Dictionary) -> void:
 		g.box(trim, _t(Vector3(s * 7.8, 6.05, 0)), Vector3(4.8, 0.2, 0.32))
 		g.box(trim, _t(Vector3(s * 7.8, 12.5, -FRONT * 0.5)), Vector3(4.8, 0.25, FRONT + 0.3))
 		g.box(st, _t(Vector3(s * 7.8, 13.1, -0.2)), Vector3(4.8, 0.9, 0.4), true)
-		g.part(side + "/Blind door")
-		var dp := arch(s * 7.2, 3.2, 0.9, 1.1)
-		dp.append(Vector2(s * 7.2 + 0.9, 0))
-		dp.append(Vector2(s * 7.2 - 0.9, 0))
-		g.extrude(m["wood"], cross_frame(0), dp, 0.0, 0.05)
+		g.part(side + "/Lower window")
 		g.extrude(trim, cross_frame(0), band(arch(s * 7.2, 3.2, 0.9, 1.1, 0.26), arch(s * 7.2, 3.2, 0.9, 1.1)), 0.0, 0.16)
 		for e in [-1.0, 1.0]:
-			g.box(trim, _t(Vector3(s * 7.2 + e * 1.03, 1.6, 0.08)), Vector3(0.26, 3.2, 0.16))
-		g.box(m["iron"], _t(Vector3(s * 7.2 + 0.45, 1.3, 0.07)), Vector3(0.1, 0.1, 0.06))
+			g.box(trim, _t(Vector3(s * 7.2 + e * 1.03, 2.1, 0.08)), Vector3(0.26, 2.2, 0.16))
 		# plinth (gap at the portal)
 		g.part(side)
 		g.box(trim, _t(Vector3(s * 6.4, 0.4, 0.1)), Vector3(7.6, 0.8, 0.3))
@@ -842,7 +862,7 @@ static func _body(g: Geo, gi: Geo, m: Dictionary) -> void:
 			g.box(st, ta * _t(Vector3(u, 7.2, 1.05)), Vector3(1.0, 14.4, 1.2), true)
 			g.box(st, ta * _t(Vector3(u, 1.4, 1.5)), Vector3(1.2, 2.8, 1.2), true)
 			g.box(trim, ta * _t(Vector3(u, 2.85, 1.5)), Vector3(1.3, 0.15, 1.3))
-			pinnacle(g, st, ta * _t(Vector3(u, 14.4, 1.05)), 0.85, 4.2)
+			pinnacle(g, trim, ta * _t(Vector3(u, 14.4, 1.05)), 0.85, 4.2)
 			var tf := Transform3D(Basis(Vector3(s, 0, 0), Vector3.UP, Vector3.BACK), Vector3(0, 0, -u))
 			var fp := PackedVector2Array([Vector2(NAVE_OUT, 15.8), Vector2(NAVE_OUT, 14.4)])
 			for i in range(1, 9):
@@ -918,11 +938,11 @@ static func _transepts(g: Geo, m: Dictionary) -> void:
 			g.part(wn + "/Buttresses")
 			var bx := NAVE_IN + bay_w * 2.0
 			g.box(st, tw * _t(Vector3(bx, 7.0, out * 1.1)), Vector3(1.0, 14.0, 1.2), true)
-			pinnacle(g, st, tw * _t(Vector3(bx, 14.0, out * 1.1)), 0.85, 4.2)
+			pinnacle(g, trim, tw * _t(Vector3(bx, 14.0, out * 1.1)), 0.85, 4.2)
 			# corner buttresses at the end wall
 			g.box(st, tw * _t(Vector3(TRANS_OUT - 0.5, 6.5, out * 1.1)), Vector3(1.0, 13.0, 1.2), true)
 			g.box(st, tw * _t(Vector3(TRANS_OUT + 0.6, 6.5, 0)), Vector3(1.2, 13.0, 1.0), true)
-			pinnacle(g, st, tw * _t(Vector3(TRANS_OUT + 0.1, 13.0, out * 0.6)), 1.0, 5.0)
+			pinnacle(g, trim, tw * _t(Vector3(TRANS_OUT + 0.1, 13.0, out * 0.6)), 1.0, 5.0)
 		# end wall: a tall triple lancet, a gable with a rose
 		var te := axis_frame(s * (TRANS_IN + TRANS_OUT) * 0.5, s)
 		var u0 := U_CROSS0 - 1.0
@@ -988,10 +1008,10 @@ static func _east_end(g: Geo, m: Dictionary) -> void:
 		# buttresses: at the corners and either side of the great window
 		g.part("East end/Buttresses/%s" % _side(s))
 		g.box(st, _t(Vector3(s * NAVE_OUT, 8.0, -(U_EAST + 1.6))), Vector3(1.0, 16.0, 1.2), true)
-		pinnacle(g, st, _t(Vector3(s * NAVE_OUT, 16.0, -(U_EAST + 1.6))), 0.9, 4.6)
+		pinnacle(g, trim, _t(Vector3(s * NAVE_OUT, 16.0, -(U_EAST + 1.6))), 0.9, 4.6)
 		g.box(st, _t(Vector3(s * (AISLE_OUT - 0.5), 5.5, -(U_EAST + 1.6))), Vector3(1.0, 11.0, 1.2), true)
 		g.box(st, _t(Vector3(s * (AISLE_OUT + 0.6), 5.5, -(U_EAST + 0.5))), Vector3(1.2, 11.0, 1.0), true)
-		pinnacle(g, st, _t(Vector3(s * (AISLE_OUT + 0.1), 11.0, -(U_EAST + 1.1))), 0.9, 4.2)
+		pinnacle(g, trim, _t(Vector3(s * (AISLE_OUT + 0.1), 11.0, -(U_EAST + 1.1))), 0.9, 4.2)
 
 
 # --------------------------------------------------------------------------- crossing tower and spire
@@ -1034,13 +1054,13 @@ static func _tower(g: Geo, m: Dictionary) -> void:
 		for sz in [-1.0, 1.0]:
 			n += 1
 			g.part("Tower/Pinnacle %d" % n)
-			pinnacle(g, st, _t(c + Vector3(sx * 5.15, 33.3, sz * 5.15)), 1.0, 5.2)
+			pinnacle(g, trim, _t(c + Vector3(sx * 5.15, 33.3, sz * 5.15)), 1.0, 5.2)
 	# the spire: eight faces, bands, little gabled lucarnes, a gilded cross
 	g.part("Tower/Spire")
 	var base := 33.3
 	var top := 64.0
 	var r0 := 4.6
-	g.cyl(st, _t(c + Vector3(0, base, 0)), r0, 0.0, top - base, 8, false, false, PI / 8.0)
+	g.cyl(trim, _t(c + Vector3(0, base, 0)), r0, 0.0, top - base, 8, false, false, PI / 8.0)
 	for y: float in [41.0, 49.0, 56.0]:
 		var r := r0 * (1.0 - (y - base) / (top - base))
 		g.cyl(trim, _t(c + Vector3(0, y, 0)), r + 0.1, r + 0.08, 0.35, 8, false, false, PI / 8.0)

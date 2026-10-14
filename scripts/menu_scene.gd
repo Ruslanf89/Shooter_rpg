@@ -98,7 +98,7 @@ func _build_ground() -> void:
 	var tint: Vector3 = cfg.get("grass_tint", Vector3(1, 1, 0.6))
 	var m := MeshKit.textured(tex, Color(tint.x * 0.55, tint.y * 0.55, tint.z * 0.55), 0.22, 0.0, 1.0)
 	MeshKit.inst(self, plane, Vector3.ZERO, m)
-	var road := MeshKit.textured("Ground048", Color(0.7, 0.6, 0.5), 0.3, 0.0, 0.8)
+	var road := MeshKit.textured("PavingStones138", Color(0.85, 0.82, 0.76), 0.4, 0.0, 0.8)
 	MeshKit.box(self, Vector3(4.0, 0.02, 120.0), Vector3(0, 0.01, 30.0), road)
 	MeshKit.box(self, Vector3(60.0, 0.02, 3.0), Vector3(0, 0.012, -2.0), road)
 	var square := MeshKit.textured("PavingStones070", Color(0.9, 0.88, 0.82), 0.33, 0.0, 0.85)

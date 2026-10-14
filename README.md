@@ -254,6 +254,12 @@ Northvale Abbey's old hall is now a real gothic abbey church, after Salisbury Ca
 - **Stained glass** (`shaders/stained_glass.gdshader`, glass pattern generated in code) glows when you're inside, and looks dark and glossy from outside, as real stained glass does by day.
 - **Railings** (`scripts/iron_fence.gd`, after the Victorian fence reference): a red-brick plinth with stone coping, brick piers with stone caps, and iron spear bars. They replace the courtyard walls, with a scrolled double iron gate (opens with F, starts open).
 - **Churchyard:** a fenced churchyard beside the church has headstones, crosses, ledger slabs, a chest tomb, a bench and its own gate.
+- **Textures:**
+  - Outside, the church walls are red-brown brick (`AlleyBrick`). Inside they stay the abbey's stone (`shaders/church_wall.gdshader` picks by which side you're on).
+  - Window frames, cornices, pinnacles and the spire are stone.
+  - The floor is green, black and white checkered tiles (`Tiles060`).
+  - The two lower windows of the west front (aisle ends) are stained glass.
+- **Roads** in every location are now mossy cobblestones (`PavingStones138`) instead of dirt.
 - Built from extruded pointed-arch outlines merged into one mesh per material, so it costs almost nothing in FPS. Interior details are only drawn within 120 m.
 - Iron gates are `HouseDoor`s with `style = "iron"` (and `start_open`).
 

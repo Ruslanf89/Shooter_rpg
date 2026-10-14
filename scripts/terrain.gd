@@ -250,10 +250,10 @@ func apply_material(cfg: Dictionary) -> void:
 	var floor_t: String = cfg.get("floor_tex", "Ground037")
 	m.set_shader_parameter("grass_tex", MeshKit.tex(grass))
 	m.set_shader_parameter("floor_tex", MeshKit.tex(floor_t))
-	m.set_shader_parameter("dirt_tex", MeshKit.tex("Ground048"))
+	m.set_shader_parameter("dirt_tex", MeshKit.tex("PavingStones138"))     # roads: mossy cobbles
 	m.set_shader_parameter("rock_tex", MeshKit.tex(cfg.get("rock_tex", "Rock030")))
 	m.set_shader_parameter("stone_tex", MeshKit.tex("PavingStones070"))
-	for pair in [["grass_n", grass], ["floor_n", floor_t], ["dirt_n", "Ground048"], ["stone_n", "PavingStones070"]]:
+	for pair in [["grass_n", grass], ["floor_n", floor_t], ["dirt_n", "PavingStones138"], ["stone_n", "PavingStones070"]]:
 		var path := "res://assets/textures/%s_normal.jpg" % pair[1]
 		if ResourceLoader.exists(path):
 			m.set_shader_parameter(pair[0], load(path))
@@ -304,7 +304,7 @@ func _build_terrain3d(cfg: Dictionary) -> void:
 	if float(cfg.get("field_saturation", 1.0)) < 0.7:
 		field = field * Color(1.05, 0.95, 0.8)    # pale sand
 	var layers := [[grass, gmax, 0.22], [cfg.get("floor_tex", "Ground037"), tint.call("floor_tint"), 0.16],
-		["Ground048", tint.call("dirt_tint"), 0.28], ["PavingStones070", tint.call("stone_tint"), 0.33],
+		["PavingStones138", tint.call("stone_tint"), 0.4], ["PavingStones070", tint.call("stone_tint"), 0.33],
 		["Ground048", field, 0.2], [cfg.get("rock_tex", "Rock030"), tint.call("rock_tint"), 0.12]]
 	for i in layers.size():
 		var l: Array = layers[i]
