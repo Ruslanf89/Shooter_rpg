@@ -1,0 +1,12 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://d3kn2gsumlbvi"]
+
+[ext_resource type="Texture2D" uid="uid://drdm7x3gg64v5" path="res://assets/models/pew/pew_albedo.jpg" id="1_a5af2"]
+[ext_resource type="Texture2D" uid="uid://stsklmqfeq8n" path="res://assets/models/pew/pew_normal.jpg" id="2_p5hc8"]
+[ext_resource type="Texture2D" uid="uid://dkfquwyh2b4jk" path="res://assets/models/pew/pew_roughness.jpg" id="3_r5fvp"]
+
+[resource]
+albedo_color = Color(2.5, 2.25, 1.95, 1)
+albedo_texture = ExtResource("1_a5af2")
+roughness_texture = ExtResource("3_r5fvp")
+normal_enabled = true
+normal_texture = ExtResource("2_p5hc8")

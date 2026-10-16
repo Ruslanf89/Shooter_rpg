@@ -23,6 +23,8 @@ func _fix_glass(n: Node) -> void:
 			var m := (c as MeshInstance3D).material_override as ShaderMaterial
 			if m and m.shader and (m.shader.resource_path.ends_with("stained_glass.gdshader") or m.shader.resource_path.ends_with("church_wall.gdshader")):
 				GothicChurch.set_frame(m, self)
+				if m.shader.resource_path.ends_with("church_wall.gdshader"):
+					m.set_shader_parameter("out_scale", GothicChurch.BRICK_SCALE)   # real brick size
 		_fix_glass(c)
 
 

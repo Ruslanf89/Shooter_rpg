@@ -30,6 +30,8 @@ func _ready() -> void:
 	_shape = cs
 	if style == "iron":
 		_build_iron()
+	elif style == "church" or height > 3.5:
+		_build_church()
 	elif not KitBuild.door(_slab, width, height):
 		_build_planks()
 	if start_open:
@@ -70,6 +72,44 @@ func _build_iron() -> void:
 		ring.rings = 16
 		ring.ring_segments = 4
 		MeshKit.inst(_slab, ring, Vector3(width * sc[0], y0 + (y1 - y0) * sc[1], 0), ir, Vector3(90, 0, 0))
+
+
+## A tall church door leaf, after medieval cathedral west doors (Salisbury, Lichfield): square-headed
+## oak boards filling the doorway up to the lintel, long wrought-iron strap hinges with scrolled
+## ends on both faces, rows of nail heads along the straps and a ring handle.
+func _build_church() -> void:
+	var oak := MeshKit.textured("Planks021", Color(0.5, 0.34, 0.22), 0.9, 0.35, 0.72)
+	var iron := MeshKit.mat(Color(0.08, 0.075, 0.07), 0.55, 0.8)
+	var boards := maxi(4, int(round(width / 0.24)))
+	var bw := width / boards
+	for i in boards:
+		var d := 0.085 + (0.012 if i % 2 == 0 else 0.0)
+		MeshKit.box(_slab, Vector3(bw - 0.01, height, d), Vector3(bw * (i + 0.5), height * 0.5, 0), oak)
+	var hinges := [0.45, height * 0.36, height * 0.64, height - 0.45]
+	for side in [-1.0, 1.0]:
+		var z: float = side * 0.058
+		for y: float in hinges:
+			MeshKit.box(_slab, Vector3(width * 0.9, 0.1, 0.02), Vector3(width * 0.45, y, z), iron)
+			# scrolled end: a ring and two curled branches
+			var ring := TorusMesh.new()
+			ring.inner_radius = 0.07
+			ring.outer_radius = 0.1
+			ring.rings = 14
+			ring.ring_segments = 4
+			MeshKit.inst(_slab, ring, Vector3(width * 0.9 + 0.06, y, z), iron, Vector3(90, 0, 0))
+			for b in [-1.0, 1.0]:
+				MeshKit.box(_slab, Vector3(0.38, 0.05, 0.018), Vector3(width * 0.74, y + b * 0.11, z), iron, Vector3(0, 0, b * 22.0))
+			# nail heads along the strap
+			for k in range(1, 7):
+				MeshKit.box(_slab, Vector3(0.035, 0.035, 0.03), Vector3(width * 0.9 * k / 7.0, y, z + side * 0.008), iron)
+	# ring handle on the outer face, near the free edge
+	var handle := TorusMesh.new()
+	handle.inner_radius = 0.09
+	handle.outer_radius = 0.115
+	handle.rings = 16
+	handle.ring_segments = 5
+	MeshKit.inst(_slab, handle, Vector3(width - 0.28, 1.1, 0.075), iron, Vector3(90, 0, 0))
+	MeshKit.box(_slab, Vector3(0.12, 0.12, 0.02), Vector3(width - 0.28, 1.2, 0.068), iron)
 
 
 func _build_planks() -> void:

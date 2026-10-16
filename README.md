@@ -249,7 +249,8 @@ Northvale Abbey's old hall is now a real gothic abbey church, after Salisbury Ca
 - **Inside:**
   - A tall nave with pointed arcades on clustered piers, a triforium (blind arcade), clerestory windows, and quadripartite rib vaults with ridge ribs and gilded bosses.
   - Vaulted aisles, crossing, transepts and choir.
-  - Pews, choir stalls, an altar with a carved reredos, iron chandeliers.
+  - Pews (the carved church pew model in `assets/models/pew/`, its near-black texture lifted to mid oak by the material's colour, one shared mesh and material, merged in game like the rest of the church), choir stalls, an altar with a carved reredos, iron chandeliers.
+  - To redo the pews after rebuilding the church from code, open `scenes/editor/swap_pews.gd` and run it (*File → Run*, Ctrl+Shift+X). It keeps each pew's place and saves a backup to `user://abbey_church_before_pews.scn`.
   - Statues (`assets/models/statues/`):
     - A garden statue with a bowl stands by the door in the south aisle.
     - A cemetery angel (on a stone slab) stands at the end of the south transept.
@@ -260,13 +261,13 @@ Northvale Abbey's old hall is now a real gothic abbey church, after Salisbury Ca
 - **Railings** (`scripts/iron_fence.gd`, after the Victorian fence reference): a red-brick plinth with stone coping, brick piers with stone caps, and iron spear bars. They replace the courtyard walls, with a scrolled double iron gate (opens with F, starts open).
 - **Churchyard:** a fenced churchyard beside the church has headstones, crosses, ledger slabs, a chest tomb, a bench and its own gate.
 - **Textures:**
-  - Outside, the church walls are red-brown brick (`AlleyBrick`). Inside they stay the abbey's stone (`shaders/church_wall.gdshader` picks by which side you're on).
+  - Outside, the church walls are red-brown brick (`AlleyBrick`) at real brick size: 75 mm courses (65 mm brick + 10 mm mortar), set by `BRICK_SCALE` in `scripts/gothic_church.gd`. Inside they stay the abbey's stone (`shaders/church_wall.gdshader` picks by which side you're on).
   - Window frames, cornices, pinnacles and the spire are stone.
   - The floor is green, black and white checkered tiles (`Tiles060`).
   - The two lower windows of the west front (aisle ends) are stained glass.
 - **Roads** in every location are now mossy cobblestones (`PavingStones138`) instead of dirt.
 - Built from extruded pointed-arch outlines merged into one mesh per material, so it costs almost nothing in FPS. Interior details are only drawn within 120 m.
-- Iron gates are `HouseDoor`s with `style = "iron"` (and `start_open`).
+- Iron gates are `HouseDoor`s with `style = "iron"` (and `start_open`). The church's great doors (any `HouseDoor` taller than 3.5 m, or `style = "church"`) are square-headed oak boards with long iron strap hinges, after medieval cathedral west doors, so they fill the portal right up to the lintel.
 
 ### Editing the church yourself (in Godot)
 The church is a normal scene: **`scenes/buildings/abbey_church.scn`**. Double-click it in the FileSystem panel.

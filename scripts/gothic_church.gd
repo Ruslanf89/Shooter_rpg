@@ -38,6 +38,9 @@ const AISLE_TOP := 8.4
 const WALL_TOP := 18.0
 const GABLE_TOP := 25.6
 const RIDGE := 25.4
+## Outside brick: the AlleyBrick texture holds 20.5 courses; a real brick course is 65 mm of brick
+## plus 10 mm of mortar (75 mm), so one repeat is 1.54 m: 0.65 repeats per metre.
+const BRICK_SCALE := 0.65
 
 static var _glass_tex: ImageTexture
 
@@ -517,7 +520,7 @@ static func wall_material(root: Node3D) -> ShaderMaterial:
 	m.set_shader_parameter("out_tex", MeshKit.tex("AlleyBrick"))
 	m.set_shader_parameter("out_normal", MeshKit.normal_tex("AlleyBrick"))
 	m.set_shader_parameter("out_tint", Vector3(1.2, 1.08, 1.02))
-	m.set_shader_parameter("out_scale", 0.9)
+	m.set_shader_parameter("out_scale", BRICK_SCALE)
 	m.set_shader_parameter("in_tex", MeshKit.tex("Bricks066"))
 	m.set_shader_parameter("in_normal", MeshKit.normal_tex("Bricks066"))
 	m.set_shader_parameter("in_tint", Vector3(1.126, 1.036, 0.887))
