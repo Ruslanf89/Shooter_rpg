@@ -46,7 +46,7 @@ func npcs() -> Array:
 		{"id": "brannock", "name": "Sergeant Brannock", "title": "Northvale Guard", "pos": Vector3(8, 0, 43), "yaw": 200, "model": "people/adventurer",
 			"colors": {"LightGreen": Color(0.4, 0.45, 0.55), "Green": Color(0.22, 0.27, 0.38)}},
 		{"id": "vesper", "name": "VesPerFPV", "title": "FPV Pilot", "pos": VESPER, "yaw": 120, "model": "people/casual",
-			"colors": {"White": "print", "LightBlue": Color(0.06, 0.06, 0.07), "Red_Dark": Color(0.16, 0.16, 0.17), "Hair": Color(0.16, 0.1, 0.06), "Skin": Color(0.88, 0.68, 0.6)},
+			"colors": People.vesper_colors(),
 			"face": "res://assets/textures/vesper_face.png", "build": Vector3(1.22, 1.0, 1.18), "pitch": 1.25},
 	]
 

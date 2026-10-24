@@ -258,10 +258,11 @@ Northvale Abbey's old hall is now a real gothic abbey church, after Salisbury Ca
     - Each has a collider. They are parts under *Interior/Statues*: move or scale them like any other part.
   - Soft pools of coloured light on the floor.
 - **Stained glass** (`shaders/stained_glass.gdshader`, glass pattern generated in code) glows when you're inside, and looks dark and glossy from outside, as real stained glass does by day.
+- **Portrait window:** the arch over the great doors holds a painted-glass window of Saint Shkvarok with a gold halo and the banner "Церква Святого Шкварка" (`assets/textures/church/portrait_window.png`, added by `GothicChurch.portrait_window()`). One pane faces the courtyard and one the nave, and both glow a little.
 - **Railings** (`scripts/iron_fence.gd`, after the Victorian fence reference): a red-brick plinth with stone coping, brick piers with stone caps, and iron spear bars. They replace the courtyard walls, with a scrolled double iron gate (opens with F, starts open).
 - **Churchyard:** a fenced churchyard beside the church has headstones, crosses, ledger slabs, a chest tomb, a bench and its own gate.
 - **Textures:**
-  - Outside, the church walls are red-brown brick (`AlleyBrick`) at real brick size: 75 mm courses (65 mm brick + 10 mm mortar), set by `BRICK_SCALE` in `scripts/gothic_church.gd`. Inside they stay the abbey's stone (`shaders/church_wall.gdshader` picks by which side you're on).
+  - Outside, the church walls are red-brown brick (`AlleyBrick`) at the size of the large "monastery" bricks of Gothic brick churches (about 29 x 14 x 9 cm, 10.5 cm courses with mortar), set by `BRICK_SCALE` in `scripts/gothic_church.gd`. Inside they stay the abbey's stone (`shaders/church_wall.gdshader` picks by which side you're on).
   - Window frames, cornices, pinnacles and the spire are stone.
   - The floor is green, black and white checkered tiles (`Tiles060`).
   - The two lower windows of the west front (aisle ends) are stained glass.

@@ -36,7 +36,7 @@ func npcs() -> Array:
 		{"id": "thorgrim", "name": "Thorgrim Ironbeard", "title": "Outpost Commander", "pos": OUTPOST + Vector3(5, 0, 6), "yaw": 180, "model": "people/worker", "colors": {"Worker_Vest": Color(0.4, 0.3, 0.2), "Worker_Yellow": Color(0.45, 0.42, 0.38), "Moustache": Color(0.5, 0.25, 0.12)}},
 		{"id": "sila", "name": "Ranger Sila", "title": "Ranger of the Pass", "pos": LAKE + Vector3(19, 0, -8), "yaw": 240, "model": "people/woman_casual", "colors": {"Shirt": Color(0.28, 0.4, 0.34), "Pants": Color(0.3, 0.25, 0.2), "Hair": Color(0.15, 0.1, 0.07)}},
 		{"id": "vesper", "name": "VesPerFPV", "title": "FPV Pilot", "pos": Vector3(-10, 0, -206), "yaw": 160, "model": "people/casual",
-			"colors": {"White": "print", "LightBlue": Color(0.06, 0.06, 0.07), "Red_Dark": Color(0.16, 0.16, 0.17), "Hair": Color(0.16, 0.1, 0.06), "Skin": Color(0.88, 0.68, 0.6)},
+			"colors": People.vesper_colors(),
 			"face": "res://assets/textures/vesper_face.png", "build": Vector3(1.22, 1.0, 1.18), "pitch": 1.25},
 	]
 

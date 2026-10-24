@@ -114,6 +114,8 @@ const MODELS := {
 }
 
 const LEASH := 40.0
+const LOSE_TIME := 6.0     # guards give up on a wanted player unseen this long...
+const LOSE_DIST := 70.0    # ...or this far away
 
 const HUMANOIDS := ["bandit", "cap_bandit", "captain", "cultist", "gnoll", "gnoll_brute", "gnoll_shaman", "warlord", "ghoul", "kobold", "geomancer",
 	"ice_troll", "flame_cultist", "drowned", "pirate", "captain_bones", "fire_imp", "pyrax"]
@@ -169,6 +171,7 @@ var _avoid_angle := 0.0
 var _strafe_sign := 1.0
 var _strafe_t := 0.0
 var _los_t := 0.0
+var _unseen_t := 0.0               # guards: how long the wanted player has been out of sight
 var _has_los := false
 var _walk_phase := 0.0
 var _hurt_t := 0.0
@@ -1433,6 +1436,7 @@ func _physics_process(delta: float) -> void:
 	if _los_t <= 0.0:
 		_los_t = 0.2 + randf() * 0.1
 		_has_los = dist < maxf(aggro_range, attack_range) + 10.0 and _can_see(player)
+	_unseen_t = 0.0 if _has_los or state != State.CHASE else _unseen_t + delta
 
 	var desired := Vector3.ZERO
 	if state == State.IDLE:
@@ -1447,6 +1451,9 @@ func _physics_process(delta: float) -> void:
 		elif neutral and world.wanted_stars == 0 and foe == null:
 			_evade()
 		elif from_home > LEASH * (1.4 if boss else (5.0 if neutral else 1.0)) and _charge_t <= 0.0:
+			_evade()
+		elif neutral and foe == null and (_unseen_t > LOSE_TIME or dist > LOSE_DIST):
+			# guards lose a wanted player who broke line of sight or got far away
 			_evade()
 		else:
 			desired = _chase(delta, player, to_p, dist)

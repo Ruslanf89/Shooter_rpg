@@ -37,7 +37,7 @@ func npcs() -> Array:
 		{"id": "millie", "name": "Millie", "title": "The Miller", "pos": FARM + Vector3(23, 0, -6), "yaw": 220, "model": "people/woman_dress", "colors": {"Dress": Color(0.72, 0.66, 0.55), "Hair": Color(0.6, 0.4, 0.2)}},
 		{"id": "ostrand", "name": "Captain Ostrand", "title": "Kingdom's Watch", "pos": Vector3(10, 0, -200), "yaw": 200, "model": "people/adventurer", "colors": {"LightGreen": Color(0.38, 0.44, 0.58), "Green": Color(0.2, 0.25, 0.4), "Gold": Color(0.85, 0.7, 0.3)}},
 		{"id": "vesper", "name": "VesPerFPV", "title": "FPV Pilot", "pos": Vector3(-8, 0, -204), "yaw": 160, "model": "people/casual",
-			"colors": {"White": "print", "LightBlue": Color(0.06, 0.06, 0.07), "Red_Dark": Color(0.16, 0.16, 0.17), "Hair": Color(0.16, 0.1, 0.06), "Skin": Color(0.88, 0.68, 0.6)},
+			"colors": People.vesper_colors(),
 			"face": "res://assets/textures/vesper_face.png", "build": Vector3(1.22, 1.0, 1.18), "pitch": 1.25},
 	]
 

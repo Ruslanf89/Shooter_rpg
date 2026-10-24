@@ -141,6 +141,17 @@ func refresh() -> void:
 	var pc := Crafting.pouch("consumables")
 	var potions := Game.make_label("%s %d   %s %d   %s %d" % [Loc.t("Potions [H]"), int(pc.get("health_potion", 0)) + int(pc.get("greater_potion", 0)), Loc.t("Mana [J]"), int(pc.get("mana_potion", 0)), Loc.t("Bandages"), int(pc.get("bandage", 0))], 15, Color(1.0, 0.7, 0.65))
 	bv.add_child(potions)
+	# what's in your pouches, as pictures (hover for the name)
+	var pouch := []
+	for k in pc:
+		if int(pc[k]) > 0 and Crafting.CONSUMABLES.has(k):
+			pouch.append([k, int(pc[k]), Loc.t(Crafting.CONSUMABLES[k][0])])
+	var gd := Crafting.pouch("gadgets")
+	for k in gd:
+		if int(gd[k]) > 0 and Crafting.GADGETS.has(k):
+			pouch.append([k, int(gd[k]), Loc.t(Crafting.GADGETS[k][0])])
+	if not pouch.is_empty():
+		bv.add_child(ItemIcons.count_row(pouch, 44))
 	var hint2 := Game.make_label(Loc.t("Salvage mode: right-click breaks an item into materials") if salvage_mode else Loc.t("Drag to move  -  right-click to equip  -  [I] / [Esc] close"), 14, Color(1.0, 0.6, 0.4) if salvage_mode else Color(0.7, 0.7, 0.75))
 	bv.add_child(hint2)
 

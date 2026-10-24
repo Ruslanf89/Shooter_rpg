@@ -403,10 +403,9 @@ func face_on(p: Dictionary, texture_path: String) -> void:
 	holder.reparent(att, true)
 
 
-## VesPerFPV as in the game (printed shirt, photo face).
+## VesPerFPV as in the game (printed tee, joggers, grey cap, photo face).
 func vesper(pos: Vector3, yaw: float) -> Dictionary:
-	var p := person("people/casual", {"White": "print", "LightBlue": Color(0.06, 0.06, 0.07), "Red_Dark": Color(0.16, 0.16, 0.17),
-		"Hair": Color(0.16, 0.1, 0.06), "Skin": Color(0.88, 0.68, 0.6)}, pos, yaw, 1.62)
+	var p := person("people/casual", People.vesper_colors(), pos, yaw, 1.62)
 	play(p, "idle")
 	face_on(p, "res://assets/textures/vesper_face.png")
 	return p
@@ -496,8 +495,9 @@ func soldier(pos: Vector3, yaw: float, with_rifle := true) -> Dictionary:
 	for x in [-0.11, 0.0, 0.11]:
 		MeshKit.box(vest, Vector3(0.09, 0.13, 0.05), Vector3(x, -0.1, 0.17), dark)
 	MeshKit.box(vest, Vector3(0.36, 0.05, 0.3), Vector3(0, -0.17, 0), dark)
-	MeshKit.box(vest, Vector3(0.1, 0.04, 0.03), Vector3(0.09, 0.08, 0.16), MeshKit.mat(Color(0.95, 0.85, 0.1)))
-	MeshKit.box(vest, Vector3(0.1, 0.04, 0.03), Vector3(0.09, 0.04, 0.16), MeshKit.mat(Color(0.1, 0.35, 0.8)))
+	# Ukrainian flag patch: blue on top, yellow below
+	MeshKit.box(vest, Vector3(0.1, 0.04, 0.03), Vector3(0.09, 0.08, 0.16), MeshKit.mat(Color(0.1, 0.35, 0.8)))
+	MeshKit.box(vest, Vector3(0.1, 0.04, 0.03), Vector3(0.09, 0.04, 0.16), MeshKit.mat(Color(0.95, 0.85, 0.1)))
 	attach(p, "spine_03", vest, Transform3D(Basis(), Vector3(0, 0.0, 0)))
 	if with_rifle:
 		var holder := Node3D.new()

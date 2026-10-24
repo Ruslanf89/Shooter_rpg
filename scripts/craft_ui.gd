@@ -10,6 +10,7 @@ var station := "field"
 var _list: VBoxContainer
 var _detail: VBoxContainer
 var _mats: Label
+var _mats_box: VBoxContainer   # icon rows for materials and the bag (potions, gadgets)
 var _sel := {}
 var _quality := 0
 
@@ -51,6 +52,9 @@ func _ready() -> void:
 	_mats = Game.make_label("", 14, Color(0.85, 0.85, 0.88))
 	_mats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_mats.custom_minimum_size = Vector2(470, 0)
+	_mats_box = VBoxContainer.new()
+	_mats_box.custom_minimum_size = Vector2(470, 0)
+	rp.add_child(_mats_box)
 	rp.add_child(_mats)
 	var hint := Game.make_label(Loc.t("[Esc] close  -  salvage gear in the inventory [I]"), 13, Color(0.65, 0.65, 0.7))
 	rp.add_child(hint)
@@ -260,22 +264,28 @@ func _show_upgrade() -> void:
 
 
 func _update_mats() -> void:
-	var parts := []
+	var mats := []
 	for k in Crafting.MATERIALS:
 		var n := Crafting.count(k)
 		if n > 0:
-			parts.append("%s %d" % [Crafting.mat_name(k), n])
+			mats.append([k, n, Crafting.mat_name(k)])
 	var c := Crafting.pouch("consumables")
 	var g := Crafting.pouch("gadgets")
 	var bag := []
 	for k in c:
 		if int(c[k]) > 0:
-			bag.append("%s %d" % [Loc.t(Crafting.CONSUMABLES[k][0]), int(c[k])])
+			bag.append([k, int(c[k]), Loc.t(Crafting.CONSUMABLES[k][0])])
 	for k in g:
 		if int(g[k]) > 0:
-			bag.append("%s %d" % [Loc.t(Crafting.GADGETS[k][0]), int(g[k])])
-	_mats.text = ("  ·  ".join(parts) if not parts.is_empty() else Loc.t("None yet - monsters drop materials, and you can gather ore, herbs and timber [F]")) \
-		+ ("\n" + "  ·  ".join(bag) if not bag.is_empty() else "") + "\n" + Loc.t("Gold") + ": %d" % int(Game.inventory.get("gold", 0))
+			bag.append([k, int(g[k]), Loc.t(Crafting.GADGETS[k][0])])
+	for ch in _mats_box.get_children():
+		ch.queue_free()
+	if not mats.is_empty():
+		_mats_box.add_child(ItemIcons.count_row(mats))
+	if not bag.is_empty():
+		_mats_box.add_child(ItemIcons.count_row(bag))
+	_mats.text = (Loc.t("None yet - monsters drop materials, and you can gather ore, herbs and timber [F]") + "\n" if mats.is_empty() else "") \
+		+ Loc.t("Gold") + ": %d" % int(Game.inventory.get("gold", 0))
 
 
 func _unhandled_input(event: InputEvent) -> void:

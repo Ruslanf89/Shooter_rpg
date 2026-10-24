@@ -1,9 +1,65 @@
 class_name ItemIcons
 extends RefCounted
-## Small vector icons for items (drawn into inventory slots).
+## Item icons. Weapons and armor use painted/rendered pictures from
+## res://assets/item_icons/<base>/<quality>.png (common, uncommon, rare, epic, legendary);
+## materials, potions, gadgets, gold and ammo use res://assets/item_icons/misc/<id>.png.
+## Anything without a picture falls back to the small vector drawing below.
+
+const QUALITY_NAMES := ["common", "uncommon", "rare", "epic", "legendary"]
+static var _cache: Dictionary = {}
+
+
+static func _load(path: String) -> Texture2D:
+	if not _cache.has(path):
+		_cache[path] = load(path) if ResourceLoader.exists(path) else null
+	return _cache[path]
+
+
+## Picture of a material / consumable / gadget / "gold" / "ammo" (null if there is none).
+static func misc(id: String) -> Texture2D:
+	return _load("res://assets/item_icons/misc/%s.png" % id)
+
+
+## A row of small pictures with counts, e.g. [["herb", 3, "Healing Herb"], ...]. Hover shows the name.
+static func count_row(entries: Array, icon_size := 40) -> HFlowContainer:
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 6)
+	row.add_theme_constant_override("v_separation", 4)
+	for e in entries:
+		var cell := Control.new()
+		cell.custom_minimum_size = Vector2(icon_size, icon_size)
+		cell.tooltip_text = "%s x%d" % [e[2], int(e[1])]
+		cell.mouse_filter = Control.MOUSE_FILTER_PASS
+		var tex := misc(e[0])
+		var n := int(e[1])
+		cell.draw.connect(func() -> void:
+			cell.draw_rect(Rect2(Vector2.ZERO, cell.size), Color(0.08, 0.09, 0.12, 0.85))
+			if tex:
+				cell.draw_texture_rect(tex, Rect2(Vector2(2, 2), cell.size - Vector2(4, 4)), false)
+			else:
+				cell.draw_string(ThemeDB.fallback_font, Vector2(3, 15), String(e[2]).left(3), HORIZONTAL_ALIGNMENT_LEFT, -1, 12)
+			var txt := str(n)
+			var f := ThemeDB.fallback_font
+			var w := f.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
+			var pos := Vector2(cell.size.x - w - 3, cell.size.y - 4)
+			cell.draw_string_outline(f, pos, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, 4, Color(0, 0, 0))
+			cell.draw_string(f, pos, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1, 1, 1)))
+		row.add_child(cell)
+	return row
 
 
 static func draw_icon(c: CanvasItem, item: Dictionary, size: Vector2) -> void:
+	var q: int = clampi(int(item.get("quality", 0)), 0, 4)
+	var tex := _load("res://assets/item_icons/%s/%s.png" % [str(item.get("base", "")), QUALITY_NAMES[q]])
+	if tex:
+		c.draw_texture_rect(tex, Rect2(Vector2.ZERO, size), false)
+		c.draw_circle(Vector2(56, 8) * (size.x / 64.0), 4.0 * size.x / 64.0, Items.quality_color(q))
+		return
+	_draw_vector(c, item, size)
+
+
+## The original vector icons (fallback).
+static func _draw_vector(c: CanvasItem, item: Dictionary, size: Vector2) -> void:
 	var col := Items.quality_color(item["quality"])
 	var dark := Color(0.12, 0.12, 0.14)
 	var metal := Color(0.55, 0.57, 0.6)

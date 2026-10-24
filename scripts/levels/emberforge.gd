@@ -40,7 +40,7 @@ func npcs() -> Array:
 		{"id": "kaelen", "name": "Archmage Kaelen", "title": "Keeper of the Ward", "pos": WARD + Vector3(4, 0, 5), "yaw": 180, "model": "people/business", "colors": {"Suit": Color(0.16, 0.18, 0.36), "Tie": Color(0.8, 0.62, 0.2), "Hair": Color(0.75, 0.75, 0.78)}},
 		{"id": "ryla", "name": "Scout Ryla", "title": "Kingdom Scout", "pos": SCOUT, "yaw": 150, "model": "people/woman_casual", "colors": {"Shirt": Color(0.34, 0.4, 0.27), "Pants": Color(0.32, 0.25, 0.18), "Hair": Color(0.55, 0.3, 0.15)}},
 		{"id": "vesper", "name": "VesPerFPV", "title": "FPV Pilot", "pos": Vector3(-10, 0, -204), "yaw": 160, "model": "people/casual",
-			"colors": {"White": "print", "LightBlue": Color(0.06, 0.06, 0.07), "Red_Dark": Color(0.16, 0.16, 0.17), "Hair": Color(0.16, 0.1, 0.06), "Skin": Color(0.88, 0.68, 0.6)},
+			"colors": People.vesper_colors(),
 			"face": "res://assets/textures/vesper_face.png", "build": Vector3(1.22, 1.0, 1.18), "pitch": 1.25},
 	]
 

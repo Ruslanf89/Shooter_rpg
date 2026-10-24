@@ -31,6 +31,7 @@ var _save_t := 120.0
 var wanted_stars := 0
 var tech_level := 0                # how much of the player's technology this land has learned (0..5)
 var _wanted_t := 0.0
+var _last_seen := Vector3.ZERO       # where a guard last saw you while wanted
 var _escalate_t := 0.0
 var _reinforce_t := 0.0
 var homes: Array = []            # houses villagers can live in (see Buildings.house)
@@ -1508,22 +1509,31 @@ func _process_wanted(delta: float) -> void:
 	_escalate_t -= delta
 	if wanted_stars <= 0:
 		return
+	# a guard who is chasing you and can see you (close enough) keeps the heat on;
+	# out of sight, the stars run out (10 s + 6 s per star)
 	var seen := false
 	for e in get_tree().get_nodes_in_group("enemies"):
-		if e.neutral and e.state == Enemy.State.CHASE and e._has_los:
+		if e.neutral and e.state == Enemy.State.CHASE and e._has_los \
+				and e.global_position.distance_to(player.global_position) < 45.0:
 			seen = true
 			break
 	if seen:
-		_wanted_t = maxf(_wanted_t, 8.0 + wanted_stars * 4.0)
+		_last_seen = player.global_position
+		_wanted_t = maxf(_wanted_t, 10.0 + wanted_stars * 6.0)
 	else:
-		_wanted_t -= delta
+		_wanted_t = minf(_wanted_t, 10.0 + wanted_stars * 6.0) - delta
 	if _wanted_t <= 0.0:
 		wanted_stars = 0
 		hud.show_message(Loc.t("You lost the guards"), Color(0.6, 1.0, 0.6), 2.5)
+		# called-in reinforcements go back to their posts (gone once you can't see them)
+		for e in get_tree().get_nodes_in_group("enemies"):
+			if e.has_meta("reinforcement") and e.global_position.distance_to(player.global_position) > 40.0:
+				e.queue_free()
 		return
-	# reinforcements from 2 stars up
+	# reinforcements from 2 stars up, only while a guard can see you: they search where you
+	# were last seen instead of homing in on you, so hiding still works
 	_reinforce_t -= delta
-	if wanted_stars >= 2 and _reinforce_t <= 0.0:
+	if wanted_stars >= 2 and seen and _reinforce_t <= 0.0:
 		_reinforce_t = 40.0 / wanted_stars
 		var guards := 0
 		for e in get_tree().get_nodes_in_group("enemies"):
@@ -1533,7 +1543,9 @@ func _process_wanted(delta: float) -> void:
 			var a := randf() * TAU
 			var p := player.global_position + Vector3(cos(a), 0, sin(a)) * 38.0
 			var g := spawn_guard("guard_archer" if randf() < 0.35 else "guard", p, false)
-			g.call_deferred("aggro")
+			g.set_meta("reinforcement", true)
+			g.home = _last_seen
+			g._wander_target = _last_seen
 
 
 ## Adds a town guard (neutral until the player commits a crime).

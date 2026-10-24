@@ -38,7 +38,7 @@ func npcs() -> Array:
 		{"id": "mara", "name": "Old Mara", "title": "Herbalist", "pos": Vector3(-16, 0, -168), "yaw": 150, "model": "people/woman", "colors": {"White": Color(0.42, 0.36, 0.46), "Hair_Blond": Color(0.72, 0.72, 0.72), "Hair_Brown": Color(0.6, 0.6, 0.6), "Orange": Color(0.4, 0.3, 0.22)}},
 		{"id": "edwin", "name": "Gravekeeper Edwin", "title": "Keeper of the Dead", "pos": Vector3(4, 0, -28), "yaw": 180, "model": "people/man1", "colors": {"Shirt": Color(0.2, 0.2, 0.22), "Shirt2": Color(0.12, 0.12, 0.13), "Pants": Color(0.1, 0.1, 0.11), "Hair": Color(0.6, 0.6, 0.6), "Hair2": Color(0.55, 0.55, 0.55)}},
 		{"id": "vesper", "name": "VesPerFPV", "title": "FPV Pilot", "pos": Vector3(-8, 0, -204), "yaw": 160, "model": "people/casual",
-			"colors": {"White": "print", "LightBlue": Color(0.06, 0.06, 0.07), "Red_Dark": Color(0.16, 0.16, 0.17), "Hair": Color(0.16, 0.1, 0.06), "Skin": Color(0.88, 0.68, 0.6)},
+			"colors": People.vesper_colors(),
 			"face": "res://assets/textures/vesper_face.png", "build": Vector3(1.22, 1.0, 1.18), "pitch": 1.25},
 	]
 

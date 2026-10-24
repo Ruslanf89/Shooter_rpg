@@ -34,7 +34,21 @@ const OUTFITS := {
 	"guard": {"sleeves": 2, "legs": 1, "pieces": ["breastplate", "pauldrons", "helmet", "belt"]},
 	"bandit": {"sleeves": 0, "legs": 1, "pieces": ["belt", "bracers"]},
 	"soldier": {"sleeves": 2, "legs": 1, "pieces": [], "camo": true},
+	# VesPerFPV: white printed tee worn untucked, black joggers with cuffs, black sneakers, grey cap, watch
+	"vesper": {"sleeves": 1, "legs": 1, "pieces": ["cap", "watch", "drawstring"], "print": "res://assets/textures/vesper_shirt.png",
+		"hem": 0.975, "sleeve_end": 1.31, "sneakers": true, "joggers": true, "shirt_puff": 0.02, "pants_puff": 0.032, "belly": 0.05, "shoe_puff": 0.012, "face_inset": 0.045},
 }
+
+
+## VesPerFPV's look (see assets/textures/vesper_shirt.png and vesper_face.png). Used by every level and the cinematics.
+static func vesper_colors() -> Dictionary:
+	return {"outfit": "vesper", "Shirt": Color(0.95, 0.95, 0.94), "Pants": Color(0.1, 0.1, 0.11), "Shoes": Color(0.085, 0.085, 0.09),
+		"Hair": Color(0.15, 0.1, 0.07), "Skin": Color(0.86, 0.6, 0.57), "cap": Color(0.43, 0.41, 0.4),
+		"hair_style": "Hair_Buzzed", "no_beard": true}
+
+## Cap band height above the head bone, drawstring knot offset from the pelvis bone (model space, metres).
+const CAP_BAND := 0.158
+const DRAWSTRING_AT := Vector3(0, -0.02, 0.14)
 
 static var _lib: AnimationLibrary
 static var _meshes := {}            # gender -> body ArrayMesh with body-part vertex colours
@@ -89,6 +103,18 @@ static func build(parent: Node3D, file: String, colors: Dictionary, head_height 
 			m.set_shader_parameter("camo", outfit.get("camo", false))
 			if outfit.get("camo", false):
 				m.set_shader_parameter("camo_tex", Cinematic.camo_material().albedo_texture)
+			if outfit.has("print") and ResourceLoader.exists(outfit["print"]):
+				m.set_shader_parameter("print_tex", load(outfit["print"]))
+				m.set_shader_parameter("printed", true)
+			m.set_shader_parameter("hem_y", outfit.get("hem", 0.0))
+			m.set_shader_parameter("sleeve_end", outfit.get("sleeve_end", 0.0))
+			m.set_shader_parameter("sneakers", outfit.get("sneakers", false))
+			m.set_shader_parameter("joggers", outfit.get("joggers", false))
+			m.set_shader_parameter("shirt_puff", outfit.get("shirt_puff", 0.0))
+			m.set_shader_parameter("pants_puff", outfit.get("pants_puff", 0.0))
+			m.set_shader_parameter("belly", outfit.get("belly", 0.0))
+			m.set_shader_parameter("shoe_puff", outfit.get("shoe_puff", 0.0))
+			m.set_shader_parameter("face_inset", outfit.get("face_inset", 0.0))
 			mi.material_override = m
 		elif nm.contains("eyebrow"):
 			_tint(mi, hair_c)
@@ -109,7 +135,7 @@ static func build(parent: Node3D, file: String, colors: Dictionary, head_height 
 			head_y = 1.6
 	model.scale = Vector3.ONE * (head_height / head_y)
 	for piece in outfit["pieces"]:
-		_piece(model, sk, piece, shirt, pants, outfit_name)
+		_piece(model, sk, piece, shirt, pants, outfit_name, colors)
 	return {"model": model, "anim": anim, "skeleton": sk}
 
 
@@ -236,6 +262,11 @@ static func _body_mesh(gender: String, mi: MeshInstance3D, sk: Skeleton3D) -> Me
 		var weights = arr[Mesh.ARRAY_WEIGHTS]
 		var cols := PackedColorArray()
 		cols.resize(verts.size())
+		# UV2 = cloth coordinates in metres on the rest (T) pose, so printed fabric follows the
+		# animation: around the body (x) and height (y); on the arms, around the arm and the
+		# distance from the shoulder going down (so print rows ring the sleeves like on a real tee).
+		var uv2 := PackedVector2Array()
+		uv2.resize(verts.size())
 		var per: int = (bones.size() / verts.size()) if verts.size() > 0 and bones != null else 0
 		for v in verts.size():
 			var best := 0
@@ -245,8 +276,15 @@ static func _body_mesh(gender: String, mi: MeshInstance3D, sk: Skeleton3D) -> Me
 					bw = weights[v * per + j]
 					best = bones[v * per + j]
 			var bname: String = names[best] if best < names.size() else sk.get_bone_name(best)
-			cols[v] = Color(float(_part(bname)) / 8.0, 0.0, 0.0, 1.0)
+			var part := _part(bname)
+			cols[v] = Color(float(part) / 8.0, 0.0, 0.0, 1.0)
+			var p: Vector3 = verts[v]
+			if part == UPPER_ARM or part == FOREARM or bname.begins_with("hand") or (absf(p.x) > 0.2 and p.y > 1.3):
+				uv2[v] = Vector2(atan2(p.y - 1.45, p.z + 0.08) * 0.06, 1.45 - (absf(p.x) - 0.17))
+			else:
+				uv2[v] = Vector2(atan2(p.x, p.z) * 0.17, p.y)
 		arr[Mesh.ARRAY_COLOR] = cols
+		arr[Mesh.ARRAY_TEX_UV2] = uv2
 		for ci in [Mesh.ARRAY_CUSTOM0, Mesh.ARRAY_CUSTOM1, Mesh.ARRAY_CUSTOM2, Mesh.ARRAY_CUSTOM3]:
 			arr[ci] = null
 		var flags: int = src.surface_get_format(s) & Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS
@@ -290,6 +328,17 @@ uniform vec3 boots_col : source_color = vec3(0.2, 0.14, 0.09);
 uniform int sleeves = 2;
 uniform int legs = 1;
 uniform bool camo = false;
+uniform sampler2D print_tex : source_color, filter_linear_mipmap, repeat_enable;
+uniform bool printed = false;      // shirt uses print_tex (tile 0.356 x 0.425 m, 3 tiles around the body)
+uniform float hem_y = 0.0;         // > 0: the shirt hangs over the hips down to this rest-pose height
+uniform float sleeve_end = 0.0;    // > 0: short sleeves end here (distance-down-the-arm coordinate)
+uniform bool sneakers = false;     // black mesh sneakers with grey rubber soles
+uniform bool joggers = false;      // sweatpants: heathered fleece, ribbed ankle cuffs
+uniform float shirt_puff = 0.0;    // metres the shirt stands off the body (loose tee)
+uniform float pants_puff = 0.0;    // same for the trousers (baggy joggers, gathered at the cuffs)
+uniform float belly = 0.0;         // extra roundness of the tummy under the shirt (chubby build)
+uniform float shoe_puff = 0.0;     // chunkier sneakers
+uniform float face_inset = 0.0;    // pushes the model's own face back so a photo face can sit on it
 uniform bool debug_parts = false;
 varying flat float part;
 
@@ -297,20 +346,60 @@ float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 
 void vertex() {
 	part = COLOR.r * 8.0;
+	int r = int(part + 0.5);
+	float y = UV2.y;
+	if (r == 1 || (r == 2 && y > sleeve_end) || (r == 4 && hem_y > 0.0 && y > hem_y)) {
+		// hangs loose over the waistband: stands off at least as far as the trousers near the hem
+		float low = 1.0 - smoothstep(hem_y + 0.04, hem_y + 0.16, y);
+		float off = mix(shirt_puff, max(shirt_puff, pants_puff + 0.006), hem_y > 0.0 ? low : 0.0);
+		// tummy: the front of the torso between the waist and the chest
+		if (r != 2) {
+			off += belly * (1.0 - smoothstep(0.04, 0.2, abs(UV2.x))) * smoothstep(0.92, 1.08, y) * (1.0 - smoothstep(1.2, 1.36, y));
+		}
+		VERTEX += NORMAL * off;
+	} else if (r == 4 || r == 5) {
+		VERTEX += NORMAL * pants_puff * smoothstep(0.1, 0.22, y);
+	} else if (r == 6) {
+		VERTEX += NORMAL * shoe_puff;
+	} else if (r == 0 && face_inset > 0.0) {
+		// flatten the nose, lips and brow straight back (the mesh faces +z); the photo patch covers it
+		VERTEX.z -= face_inset * (1.0 - smoothstep(0.07, 0.11, abs(UV2.x))) * smoothstep(1.56, 1.62, y) * (1.0 - smoothstep(1.76, 1.8, y));
+	}
 }
 
 void fragment() {
 	int r = int(part + 0.5);
+	vec2 rp = UV2;   // rest-pose cloth coordinates in metres
 	vec3 base = texture(albedo_tex, UV).rgb;
 	float cloth = 0.0;
 	vec3 cc = vec3(0.0);
-	if (r == 1 || (r == 2 && sleeves >= 1) || (r == 3 && sleeves >= 2)) { cc = shirt_col; cloth = 1.0; }
+	bool shirt = r == 1 || (r == 2 && sleeves >= 1 && (sleeve_end <= 0.0 || rp.y > sleeve_end)) || (r == 3 && sleeves >= 2)
+		|| (r == 4 && hem_y > 0.0 && rp.y > hem_y);
+	if (shirt) { cc = shirt_col; cloth = 1.0; }
 	else if (r == 4 || (r == 5 && legs >= 1)) { cc = pants_col; cloth = 1.0; }
 	else if (r == 6) { cc = boots_col; cloth = 1.0; }
 	vec3 col = base * skin_tint;
 	if (cloth > 0.5) {
 		if (camo && r != 6) {
 			cc = texture(camo_tex, UV * 7.0).rgb;
+		}
+		if (shirt && printed) {
+			cc *= texture(print_tex, vec2(rp.x / 0.356, -rp.y / 0.425)).rgb / 0.93;
+			// stitched hems at the bottom and the sleeve ends
+			float e = (r == 2) ? rp.y - sleeve_end : (r == 4 || rp.y < hem_y + 0.05) ? rp.y - hem_y : 1.0;
+			cc *= mix(0.8, 1.0, smoothstep(0.004, 0.012, e));
+		}
+		if (!shirt && joggers && (r == 4 || r == 5)) {
+			// heathered fleece, darker ribbed cuffs at the ankles
+			cc *= 0.85 + 0.3 * hash(floor(UV * 1400.0));
+			if (r == 5 && rp.y < 0.155) {
+				cc *= 0.8 + 0.25 * step(0.5, fract(rp.x * 260.0));
+			}
+		}
+		if (r == 6 && sneakers) {
+			cc *= 0.8 + 0.4 * step(0.5, fract(UV.x * 700.0) * fract(UV.y * 700.0) * 4.0);   // mesh upper
+			if (rp.y < 0.022) { cc = vec3(0.5, 0.49, 0.47); }                             // grey rubber sole
+			else if (rp.y < 0.028) { cc = vec3(0.3, 0.3, 0.3); }                            // sole edge
 		}
 		// woven fabric: a fine noise and a soft shade from the body texture
 		float weave = 0.88 + 0.12 * hash(floor(UV * 900.0));
@@ -360,7 +449,7 @@ static func _hang(model: Node3D, sk: Skeleton3D, bone: String, node: Node3D, off
 	node.reparent(att, true)
 
 
-static func _piece(model: Node3D, sk: Skeleton3D, piece: String, shirt: Color, pants: Color, outfit: String) -> void:
+static func _piece(model: Node3D, sk: Skeleton3D, piece: String, shirt: Color, pants: Color, outfit: String, colors := {}) -> void:
 	var leather := MeshKit.mat(Color(0.28, 0.18, 0.1), 0.8)
 	var steel := MeshKit.mat(Color(0.62, 0.64, 0.68), 0.45, 0.6)
 	var cloth := MeshKit.mat(shirt.darkened(0.08), 0.95)
@@ -434,5 +523,58 @@ static func _piece(model: Node3D, sk: Skeleton3D, piece: String, shirt: Color, p
 			MeshKit.cyl(n, 0.15, 0.155, 0.03, Vector3(0, -0.04, 0.0), steel, Vector3.ZERO, 18)
 			MeshKit.box(n, Vector3(0.02, 0.07, 0.04), Vector3(0, -0.07, 0.14), steel)
 			_hang(model, sk, "Head", n, Vector3(0, 0.15, 0.0))
+		"cap":
+			# washed cotton baseball cap, brim forward (+z is the face side)
+			var cap_c: Color = colors.get("cap", Color(0.43, 0.41, 0.4))
+			var cm := MeshKit.mat(cap_c, 0.95).duplicate() as StandardMaterial3D
+			cm.uv1_scale = Vector3(6, 6, 6)   # finer mottling: washed cotton
+			cm.cull_mode = BaseMaterial3D.CULL_DISABLED
+			var crown := SphereMesh.new()
+			crown.radius = 0.108
+			crown.height = 0.108
+			crown.is_hemisphere = true
+			crown.radial_segments = 24
+			crown.rings = 8
+			MeshKit.inst(n, crown, Vector3(0, CAP_BAND + 0.02, -0.006), cm, Vector3(-3, 0, 0), Vector3(1.0, 0.8, 1.12))
+			MeshKit.cyl(n, 0.108, 0.11, 0.045, Vector3(0, CAP_BAND, -0.006), cm, Vector3(-3, 0, 0), 24)
+			var brim := CylinderMesh.new()
+			brim.top_radius = 0.088
+			brim.bottom_radius = 0.088
+			brim.height = 0.009
+			brim.radial_segments = 24
+			brim.rings = 1
+			MeshKit.inst(n, brim, Vector3(0, CAP_BAND - 0.014, 0.11), cm, Vector3(7, 0, 0), Vector3(1.0, 1.0, 0.95))
+			MeshKit.sphere(n, 0.01, Vector3(0, CAP_BAND + 0.105, -0.006), cm, Vector3(1, 0.5, 1))       # top button
+			MeshKit.box(n, Vector3(0.06, 0.02, 0.01), Vector3(0, CAP_BAND - 0.012, -0.124), MeshKit.mat(cap_c.darkened(0.3), 0.9))       # back strap
+			_hang(model, sk, "Head", n, Vector3.ZERO)
+		"watch":
+			# black smartwatch on the left wrist
+			var b := sk.find_bone("lowerarm_l")
+			var hand := sk.find_bone("hand_l")
+			if b < 0 or hand < 0:
+				n.queue_free()
+				return
+			var black := MeshKit.mat(Color(0.03, 0.03, 0.035), 0.5)
+			MeshKit.cyl(n, 0.034, 0.034, 0.022, Vector3.ZERO, black, Vector3.ZERO, 14)
+			var a := (sk.global_transform * sk.get_bone_global_pose(b)).origin
+			var c := (sk.global_transform * sk.get_bone_global_pose(hand)).origin
+			var att := BoneAttachment3D.new()
+			att.bone_idx = b
+			sk.add_child(att)
+			model.add_child(n)
+			var dir := (c - a).normalized()
+			var side := dir.cross(Vector3.UP).normalized()
+			if side.length() < 0.1:
+				side = Vector3.RIGHT
+			n.global_transform = Transform3D(Basis(side, dir, side.cross(dir)).scaled(model.scale), a.lerp(c, 0.86))
+			n.reparent(att, true)
+		"drawstring":
+			# jogger drawstrings with metal tips, hanging below the shirt hem at the front
+			var cord := MeshKit.mat(Color(0.05, 0.05, 0.055), 0.9)
+			var tip := MeshKit.mat(Color(0.7, 0.7, 0.72), 0.3, 0.8)
+			for s in [-1.0, 1.0]:
+				MeshKit.cyl(n, 0.004, 0.004, 0.09, Vector3(0.022 * s, -0.045, 0), cord, Vector3(0, 0, 4.0 * s), 5)
+				MeshKit.cyl(n, 0.005, 0.005, 0.018, Vector3(0.025 * s, -0.098, 0), tip, Vector3.ZERO, 6)
+			_hang(model, sk, "pelvis", n, DRAWSTRING_AT)
 		_:
 			n.queue_free()

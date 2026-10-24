@@ -38,9 +38,10 @@ const AISLE_TOP := 8.4
 const WALL_TOP := 18.0
 const GABLE_TOP := 25.6
 const RIDGE := 25.4
-## Outside brick: the AlleyBrick texture holds 20.5 courses; a real brick course is 65 mm of brick
-## plus 10 mm of mortar (75 mm), so one repeat is 1.54 m: 0.65 repeats per metre.
-const BRICK_SCALE := 0.65
+## Outside brick: the AlleyBrick texture holds 20.5 courses. Gothic brick churches (Brick Gothic, the
+## Baltic and north German abbeys) were laid in large "monastery" bricks, about 28-30 x 13-14 x 9 cm;
+## with 1.5 cm of mortar a course is 10.5 cm, so one repeat is 2.15 m: 0.46 repeats per metre.
+const BRICK_SCALE := 0.46
 
 static var _glass_tex: ImageTexture
 
@@ -566,13 +567,106 @@ static func place(w: Node3D, pos: Vector3, yaw_deg := 0.0) -> Node3D:
 		root = (load(SCENE) as PackedScene).instantiate()
 		root.position = Props.ground_at(w, pos)
 		root.rotation_degrees.y = yaw_deg
+		swap_stalls(root)                   # before it enters the tree: the church merges its parts then
 		w.add_child(root)
 	else:
 		root = Props.pivot(w, pos, yaw_deg)
 		root.name = "AbbeyChurch"
 		build(root, false)
+	portrait_window(root)
 	_register(w, root)
 	return root
+
+
+const PORTRAIT := "res://assets/textures/church/portrait_window.png"
+
+
+## The painted-glass window in the great portal's arch, over the doors: Saint Shkvarok with his halo
+## and the banner "Церква Святого Шкварка". One pane faces the courtyard, one the nave; both glow a
+## little so the picture reads by day and by night.
+static func portrait_window(root: Node3D) -> void:
+	var tex: Texture2D = null
+	if ResourceLoader.exists(PORTRAIT):
+		tex = load(PORTRAIT)
+	else:                                   # not imported yet: read the PNG directly
+		var img := Image.load_from_file(ProjectSettings.globalize_path(PORTRAIT))
+		if img:
+			tex = ImageTexture.create_from_image(img)
+	if tex == null:
+		return
+	var m := StandardMaterial3D.new()
+	m.albedo_texture = tex
+	m.emission_enabled = true
+	m.emission_texture = tex
+	m.emission_energy_multiplier = 0.55
+	m.roughness = 0.12
+	m.specular_mode = BaseMaterial3D.SPECULAR_SCHLICK_GGX
+	var hw := 1.9                           # the portal opening: 3.8 wide, springs at 4.8, rises 3.0
+	var y0 := 4.8
+	var rise := 3.0
+	var poly := ccw(arch(0, y0, hw, rise))
+	var idx := Geometry2D.triangulate_polygon(poly)
+	var holder := Node3D.new()
+	holder.name = "Portrait window"
+	root.add_child(holder)
+	for side in [[-0.5, 1.0], [-1.0, -1.0]]:   # [z, facing]: outside pane, inside pane
+		var z: float = side[0]
+		var f: float = side[1]
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for i in range(0, idx.size(), 3):
+			var tri := [poly[idx[i]], poly[idx[i + 1]], poly[idx[i + 2]]]
+			var a: Vector2 = tri[0]
+			var b: Vector2 = tri[1]
+			var c: Vector2 = tri[2]
+			var n := (b - a).cross(c - a)
+			# Godot's front faces wind clockwise as seen by the viewer
+			var order := [0, 2, 1] if (n > 0.0) == (f > 0.0) else [0, 1, 2]
+			for k in order:
+				var p: Vector2 = tri[k]
+				var u := (p.x + hw) / (2.0 * hw)
+				if f < 0.0:
+					u = 1.0 - u              # seen from inside, still reads left to right
+				st.set_normal(Vector3(0, 0, f))
+				st.set_uv(Vector2(u, 1.0 - (p.y - y0) / rise))
+				st.add_vertex(Vector3(p.x, p.y, z))
+		st.generate_tangents()
+		var mi := MeshInstance3D.new()
+		mi.mesh = st.commit()
+		mi.material_override = m
+		holder.add_child(mi)
+
+
+## The choir stalls are replaced by confessionals (Confessional), standing where the stalls stand in
+## the edited scene, backs to the arcade, facing across the choir. Without stalls in the scene they
+## go to the stalls' original places.
+static func swap_stalls(root: Node3D) -> void:
+	var have := root.get_node_or_null("Interior/Confessionals")
+	if have != null and have.get_child_count() > 0:
+		return                               # a scene baked with them already
+	var holder := root.get_node_or_null("Interior/Choir stalls") as Node3D
+	var spots := []
+	if holder == null:
+		for s in [-1.0, 1.0]:
+			spots.append([Vector3(s * 3.085, 0, -(U_CROSS1 + 2.6)), -s * 90.0])
+	else:
+		for c in holder.get_children():
+			if not (c is Node3D):
+				continue
+			var t := (c as Node3D).transform
+			var up := c.get_parent() as Node3D
+			while up != null and up != root:
+				t = up.transform * t
+				up = up.get_parent() as Node3D
+			var p := t.origin
+			var s := signf(p.x) if absf(p.x) > 0.01 else 1.0
+			# a stall's middle is 0.61 m in front of its back panel; a confessional's 0.575
+			spots.append([Vector3(s * (absf(p.x) + 0.035), p.y, p.z), -s * 90.0 + rad_to_deg(t.basis.get_euler().y)])
+		holder.get_parent().remove_child(holder)
+		holder.free()
+	var box := node_at(root, "Interior/Confessionals")
+	for sp in spots:
+		Confessional.build(box, sp[0], sp[1])
 
 
 ## Builds the church under root. split: as named, separately movable parts (to save as an
@@ -598,6 +692,7 @@ static func build(root: Node3D, split: bool) -> void:
 		g.commit(root)
 		gi.commit(root, gi.vis_end)
 	_fittings(root, m)
+	swap_stalls(root)
 
 
 ## Each part becomes a node (pivot at the bottom centre of its bounds) with its meshes and collision.
@@ -1125,17 +1220,7 @@ static func _interior(gi: Geo, m: Dictionary) -> void:
 			gi.box(pew, _t(Vector3(x, 0.82, z + 0.25)), Vector3(3.2, 0.62, 0.06), true)
 			for e in [-1.0, 1.0]:
 				gi.box(pew, _t(Vector3(x + e * 1.6, 0.5, z + 0.05)), Vector3(0.08, 1.0, 0.6))
-	# choir stalls facing each other, with canopies
-	for s in [-1.0, 1.0]:
-		var zc := -(U_CROSS1 + 2.6)
-		gi.part("Interior/Choir stalls/%s" % _side(s))
-		gi.box(pew, _t(Vector3(s * 3.3, 0.47, zc)), Vector3(0.5, 0.08, 3.8), true)
-		gi.box(m["wood"], _t(Vector3(s * 3.62, 1.2, zc)), Vector3(0.08, 2.4, 3.8), true)
-		gi.box(m["wood"], _t(Vector3(s * 3.35, 2.45, zc)), Vector3(0.65, 0.1, 3.9))
-		for k in 5:
-			gi.box(m["wood"], _t(Vector3(s * 3.3, 0.6, zc - 1.9 + 0.95 * k)), Vector3(0.5, 0.35, 0.06))
-		gi.box(pew, _t(Vector3(s * 2.6, 0.75, zc)), Vector3(0.4, 0.06, 3.8), true)
-		gi.box(m["wood"], _t(Vector3(s * 2.45, 0.4, zc)), Vector3(0.06, 0.8, 3.8))
+	# (the choir stalls became confessionals: see swap_stalls)
 	# sanctuary: a step, the altar, a carved reredos
 	gi.part("Interior/Sanctuary/Step")
 	gi.box(trim, _t(Vector3(0, 0.08, -(U_EAST - 2.5))), Vector3(2 * NAVE_IN, 0.16, 5.0))
