@@ -25,6 +25,9 @@ var square_r := SQUARE_R
 var gates: Array = []       # big towns: gate angles (radians, 0 = +z)
 var wall_r := 0.0
 var portal := false         # VesPer's portal stands on this square (the location's start village)
+## Named people who run a building instead of a nameless worker: building type -> {"id", "name",
+## "title", "model", "colors", "shop" (optional: trader kind), "pitch"}. Set by the level after plan().
+var staff := {}
 
 const FOOTPRINT := {"shop": 6.5, "tavern": 9.0, "blacksmith": 6.5, "barracks": 8.0, "house": 6.5, "watchtower": 3.5,
 	"stable": 6.5, "granary": 4.0, "coop": 4.5, "sawmill": 6.0, "garden": 4.0, "fishing_hut": 4.5,
@@ -238,7 +241,10 @@ func build(w: Node3D) -> void:
 			"tavern":
 				r = VBuild.tavern(w, p, yaw)
 				socials += r.get("social", [])
-				works.append(r["work"])
+				if staff.has("tavern"):
+					_staff(w, staff["tavern"], r["work"][0], float(r["work"][1]))
+				else:
+					works.append(r["work"])
 			"blacksmith":
 				r = VBuild.blacksmith(w, p, yaw)
 				# a forge station at the forge (every smithy)
@@ -248,7 +254,9 @@ func build(w: Node3D) -> void:
 				fs.build_visual = false
 				(r["node"] as Node3D).add_child(fs)
 				fs.position = Vector3(-2.5, Buildings.FLOOR, -0.9)
-				if city:
+				if staff.has("blacksmith"):
+					_staff(w, staff["blacksmith"], r["work"][0], float(r["work"][1]) + PI)
+				elif city:
 					_trader(w, "weapons", r["work"][0], float(r["work"][1]) + PI, p)
 				else:
 					works.append(r["work"])
@@ -430,6 +438,26 @@ func _trader(w: Node3D, kind: String, pos: Vector3, yaw: float, near: Vector3) -
 	tg.rotation.y = yaw
 	w.town_npcs[tg.id] = tg
 	return tg
+
+
+## One of the named people who run a building (see `staff`).
+func _staff(w: Node3D, d: Dictionary, pos: Vector3, yaw: float) -> QuestGiver:
+	var g := QuestGiver.new()
+	g.world = w
+	g.id = d["id"]
+	g.display_name = Loc.t(d["name"])
+	g.title = d.get("title", "")
+	g.model_file = d.get("model", "people/worker")
+	g.colors = d.get("colors", {})
+	g.voice_pitch = d.get("pitch", 1.0)
+	if d.has("shop"):
+		g.role = "trader"
+		g.shop_kind = d["shop"]
+	w.add_child(g)
+	g.global_position = pos
+	g.rotation.y = yaw
+	w.town_npcs[g.id] = g
+	return g
 
 
 ## A named townsperson who gives quests.

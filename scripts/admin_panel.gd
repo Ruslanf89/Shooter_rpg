@@ -22,7 +22,7 @@ const HELP := """Commands:
   give <weapon|armor|base> [quality 0-4] [level]   e.g. give sniper 4 30
   ammo                 full ammo
   heal                 full health and mana
-  tp <landmark|x z>    teleport (e.g. tp Ashford, tp 100 -50)
+  tp <landmark|x z>    teleport (e.g. tp Northvale, tp 100 -50)
   spawn <type> [n] [level]   spawn enemies in front of you
   killall              kill all hostile enemies nearby
   quests               complete all quests (next level unlocks)

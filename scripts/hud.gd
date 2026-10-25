@@ -71,6 +71,10 @@ var _title_t := 0.0
 var _vignette_a := 0.0
 var _won := false
 var _objective := {}               # quest waypoint {pos, label} (QuestManager.objective_target)
+var note_panel: PanelContainer      # what you read when you inspect a clue (title + text)
+var note_title: Label
+var note_text: Label
+var _note_t := 0.0
 var _obj_t := 0.0
 
 
@@ -93,6 +97,7 @@ func _ready() -> void:
 	_build_messages()
 	_build_bigmap()
 	_build_quest_ui()
+	_build_note()
 	_build_skill_book()
 	_build_pause()
 	_build_end()
@@ -273,6 +278,50 @@ func _build_quest_ui() -> void:
 	dlg_buttons.add_theme_constant_override("separation", 4)
 	_dlg_scroll.add_child(dlg_buttons)
 	dialogue.visible = false
+
+
+## The clue / note panel (top centre): a title and a few lines of text that fade out.
+func _build_note() -> void:
+	note_panel = PanelContainer.new()
+	var sb := _panel_style(0.9)
+	sb.bg_color = Color(0.13, 0.11, 0.08, 0.93)
+	sb.border_color = Color(0.75, 0.62, 0.38, 0.9)
+	sb.content_margin_left = 20
+	sb.content_margin_right = 20
+	sb.content_margin_top = 12
+	sb.content_margin_bottom = 14
+	note_panel.add_theme_stylebox_override("panel", sb)
+	note_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_place(note_panel, Vector4(0.5, 0.06, 0.5, 0.06), Vector4(-330, 0, 330, 0))
+	root.add_child(note_panel)
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 6)
+	vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	note_panel.add_child(vb)
+	note_title = Game.make_label("", 21, Color(1.0, 0.86, 0.5))
+	note_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(note_title)
+	note_text = Game.make_label("", 17, Color(0.95, 0.92, 0.85))
+	note_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	note_text.custom_minimum_size = Vector2(620, 0)
+	vb.add_child(note_text)
+	note_panel.visible = false
+
+
+## Shows a note (a clue, a page, a record) for `duration` seconds (0: long enough to read it).
+func show_note(title: String, text: String, duration := 0.0) -> void:
+	note_title.text = title
+	note_title.visible = title != ""
+	note_text.text = text
+	note_panel.reset_size()
+	note_panel.visible = true
+	note_panel.modulate.a = 1.0
+	_note_t = duration if duration > 0.0 else clampf(4.0 + text.length() / 16.0, 5.0, 22.0)
+
+
+func hide_note() -> void:
+	_note_t = 0.0
+	note_panel.visible = false
 
 
 func set_prompt(text: String) -> void:
@@ -884,6 +933,11 @@ func _process(delta: float) -> void:
 
 	_msg_t -= delta
 	message_label.modulate.a = clampf(_msg_t, 0.0, 1.0)
+	if note_panel.visible:
+		_note_t -= delta
+		note_panel.modulate.a = clampf(_note_t * 1.5, 0.0, 1.0)
+		if _note_t <= 0.0:
+			note_panel.visible = false
 	_title_t -= delta
 	title_label.modulate.a = clampf(_title_t, 0.0, 1.0)
 	subtitle_label.modulate.a = clampf(_title_t, 0.0, 1.0)
@@ -1081,6 +1135,8 @@ func _draw_waypoint() -> void:
 	var wp: Vector3 = _objective["pos"]
 	if cam.global_position.distance_to(wp) < 1.0:
 		return
+	if absf((cam.global_transform.affine_inverse() * wp).z) < 0.02:
+		return     # exactly in the camera's plane: it can't be projected
 	var size := crosshair.size
 	var c := size * 0.5
 	var margin := 60.0

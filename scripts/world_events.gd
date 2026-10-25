@@ -193,7 +193,7 @@ func _update_active(delta: float) -> void:
 				world.hero_t = 900.0
 				world.raid_t = 600.0
 				world.ai_villagers_react("react_raid", 2.0)
-				Brain.event("raid", "Monsters raided Ashford at night and the Outsider fought them off with the guards" if _active == "raid" else "The Outsider killed a dreadful creature that stalked the valley", {"importance": 3})
+				Brain.event("raid", "Monsters raided Northvale at night and the Outsider fought them off with the guards" if _active == "raid" else "The Outsider killed a dreadful creature that stalked the valley", {"importance": 3})
 				_end()
 		_:
 			pass

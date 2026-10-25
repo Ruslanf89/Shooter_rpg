@@ -53,7 +53,7 @@ const SIZES := {"house": Vector3(9, 6, 7), "tavern": Vector3(13, 9, 9), "blacksm
 		length = v
 		_refresh()
 ## Signpost text (one arm per line).
-@export_multiline var sign_text := "Ashford"
+@export_multiline var sign_text := "Northvale"
 ## Tent / market stall cloth colour.
 @export var cloth_color := Color(0.6, 0.18, 0.12)
 ## Climbable tree platform height.

@@ -20,6 +20,8 @@ var head_height := 1.62
 var body_scale := Vector3.ONE       # e.g. VesPer is a chubby teenager: wider, same height
 var voice_pitch := 1.0
 var role := "quest"              # "quest" or "trader" (opens the shop)
+var child := false               # a child: smaller, with a bigger head (KidProportions)
+var pose := ""                   # idle animation instead of standing (e.g. "Crouch_Idle", "Sitting_Idle")
 
 var anim: AnimationPlayer
 var marker: Label3D
@@ -85,6 +87,11 @@ func _build_model() -> void:
 			anim = built["anim"]
 			_idle = "Idle"
 			var sk: Skeleton3D = built["skeleton"]
+			if child:
+				sk.add_child(KidProportions.new())
+			if pose != "" and anim.has_animation(pose):
+				_idle = pose
+				anim.play(pose)
 			if face_texture != "":
 				# the photo face replaces the model's own eyes and brows
 				for n in (built["model"] as Node3D).find_children("*", "MeshInstance3D", true, false):
@@ -248,15 +255,16 @@ func speak(line_id: String) -> float:
 	line_id = Loc.line(line_id)
 	var path := "res://assets/voice/%s.wav" % line_id
 	if not ResourceLoader.exists(path):
-		return 3.0
+		return 2.0 + QuestManager.line_text(line_id).length() / 15.0     # not voiced yet: time to read it
 	var stream: AudioStream = load(path)
 	voice.stream = stream
 	# the Ukrainian voices are one young male and two female speakers: pitch them per character
 	var key: String = str(QuestManager.dialogue().get("lines", {}).get(line_id, [""])[0])
-	var pitch: float = voice_pitch * {"uk_m_old": 0.94, "uk_m_gruff": 0.9, "uk_f_old": 0.95, "uk_f_young": 1.06}.get(key, 1.0)
+	var pitch: float = voice_pitch * {"uk_m_old": 0.94, "uk_m_gruff": 0.9, "uk_f_old": 0.95, "uk_f_young": 1.06,
+		"uk_m_elder": 0.86, "uk_m_captain": 0.86, "uk_m_smith": 0.92}.get(key, 1.0)
 	voice.pitch_scale = pitch
 	voice.play()
-	var ta := _find_anim(["Wave", "Interact", "Man_Clapping", "Female_Clapping"])
+	var ta := _find_anim(["Wave", "Interact", "Man_Clapping", "Female_Clapping"]) if pose == "" else ""
 	if ta != "":
 		anim.play(ta, 0.2)
 		if _idle != "":
@@ -271,7 +279,7 @@ func speak_stream(stream: AudioStream) -> float:
 	voice.stream = stream
 	voice.pitch_scale = voice_pitch
 	voice.play()
-	var ta := _find_anim(["Wave", "Interact", "Man_Clapping", "Female_Clapping"])
+	var ta := _find_anim(["Wave", "Interact", "Man_Clapping", "Female_Clapping"]) if pose == "" else ""
 	if ta != "":
 		anim.play(ta, 0.2)
 		if _idle != "":
@@ -288,7 +296,7 @@ func gesture() -> void:
 	if now < _gesture_at or anim == null:
 		return
 	_gesture_at = now + 6000
-	var ta := _find_anim(["Wave", "Interact", "Man_Clapping", "Female_Clapping"])
+	var ta := _find_anim(["Wave", "Interact", "Man_Clapping", "Female_Clapping"]) if pose == "" else ""
 	if ta != "":
 		anim.play(ta, 0.2)
 		if _idle != "":

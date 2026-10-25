@@ -150,7 +150,7 @@ func _on_body_entered(body: Node3D) -> void:
 	var p := body as Player
 	if p and not p.dead and world.quests.status(quest_id) == "active":
 		Game.play_sound(pickup_sound(item), null, -3.0)
-		world.quests.on_item_gathered(quest_id)
+		world.quests.on_item_gathered(quest_id, self)
 		queue_free()
 
 

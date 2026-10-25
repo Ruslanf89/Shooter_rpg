@@ -14,7 +14,7 @@ const SND := "res://assets/sounds/"
 const ZONE_LEVELS := [Vector2i(1, 6), Vector2i(6, 12), Vector2i(12, 19), Vector2i(19, 27), Vector2i(27, 36), Vector2i(36, 45)]
 
 const LEVELS := [
-	{"script": "res://scripts/levels/northvale.gd", "name": "Northvale", "subtitle": "The Abbey Grounds", "music": "northvale",
+	{"script": "res://scripts/levels/northvale.gd", "name": "Northvale", "subtitle": "The Bells of Saint Shkvarok", "music": "northvale",
 		"tip": "Kill enemies to gain XP. Every level gives a talent point - open the Skill Book with [K]."},
 	{"script": "res://scripts/levels/darkwood.gd", "name": "Darkwood", "subtitle": "Forest of the Restless Dead", "music": "darkwood",
 		"tip": "Necromancers raise skeletons and heal their allies - kill them first. Watch out for the Grave Lord's meteors."},
@@ -646,6 +646,8 @@ func _build_sounds() -> void:
 	_load_set("pickup_glass", ["ui_glass_001.ogg", "glass_01.ogg", "glass_03.ogg"])
 	_load_set("pickup_bone", _numbered("impactWood_light_", 5))
 	_load_set("chest", ["creak1.ogg", "creak2.ogg", "creak3.ogg"])
+	_load_set("bell", ["bell_01.ogg"])
+	_load_set("page", ["bookFlip1.ogg", "bookFlip2.ogg", "bookFlip3.ogg"])
 	_load_set("chest_latch", ["metalLatch.ogg", "metalClick.ogg"])
 	_load_set("door_open", ["doorOpen_1.ogg", "doorOpen_2.ogg"])
 	_load_set("door_close", ["doorClose_1.ogg", "doorClose_2.ogg", "doorClose_3.ogg", "doorClose_4.ogg"])

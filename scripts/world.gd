@@ -151,6 +151,14 @@ func _ready() -> void:
 	hud.player = player
 	add_child(hud)
 
+	# the story layer (conversations, clues, people who come and go)
+	if level.has_method("story_file"):
+		story = Story.new()
+		story.world = self
+		if story.load_story(level.story_file()):
+			add_child(story)
+		else:
+			story = null
 	# quests and quest givers
 	quests = QuestManager.new()
 	add_child(quests)
@@ -169,6 +177,11 @@ func _ready() -> void:
 			g.voice_pitch = n.get("pitch", 1.0)
 			g.head_height = n.get("head", 1.62)
 			g.body_scale = n.get("build", Vector3.ONE)
+			g.child = n.get("child", false)
+			g.pose = n.get("pose", "")
+			if n.has("shop"):
+				g.role = "trader"
+				g.shop_kind = n["shop"]
 			var np: Vector3 = n["pos"]
 			add_child(g)
 			g.global_position = Vector3(np.x, ground(np.x, np.z), np.z)
@@ -329,6 +342,8 @@ var _interactable: Node
 var _respawns: Array = []        # {"t": time, "type": String, "pos": Vector3}
 var _gather_items: Array = []
 var _talking: QuestGiver
+var story: Story                 # the location's story layer (data/story/<location>.json), if it has one
+var truce := false               # a scripted conversation with enemies around: nobody attacks
 var _weather: CPUParticles3D
 var lava_zones: Array = []       # [Vector2 center, float radius, float level]
 var _lava_tick := 0.0
@@ -553,6 +568,8 @@ func talk(npc: QuestGiver) -> void:
 		_ai_talk(npc)
 		return
 	_talking = npc
+	if story and story.talk(npc):
+		return
 	# replies every conversation can have: travel quests, trading
 	var extra: Array = journey.options_for(npc.id, npc) if journey else []
 	if npc.role == "trader":
@@ -711,7 +728,7 @@ func spawn_boss(type: String, pos: Vector3) -> void:
 	hud.show_message(Loc.t("%s has appeared! (check the map)") % e.display_name, Color(1.0, 0.45, 0.25), 3.0)
 
 
-func spawn_gather_item(quest_id: String, item: String, pos: Vector3) -> void:
+func spawn_gather_item(quest_id: String, item: String, pos: Vector3) -> GatherItem:
 	var g := GatherItem.new()
 	g.world = self
 	g.quest_id = quest_id
@@ -720,6 +737,31 @@ func spawn_gather_item(quest_id: String, item: String, pos: Vector3) -> void:
 	# a spot with y > 0.5 is that high above the ground (e.g. up in a tree)
 	g.global_position = Vector3(pos.x, ground(pos.x, pos.z) + (pos.y if pos.y > 0.5 else 0.0), pos.z)
 	_gather_items.append(g)
+	return g
+
+
+## A clue spot for a quest step (texts and places come from the story).
+func spawn_clue(cid: String, quest_id: String) -> Node:
+	return story.spawn_clue(cid, quest_id) if story else null
+
+
+## An enemy a quest step sends: {"type", "pos", "name" (optional), "elite" (optional)}.
+func spawn_quest_enemy(def: Dictionary, quest_id: String) -> Enemy:
+	var e := Enemy.new()
+	e.type = def["type"]
+	e.world = self
+	e.level = clampi(enemy_level_at(def["pos"]) + int(def.get("levels", 0)), 1, 60)
+	e.elite = def.get("elite", false)
+	if def.has("name"):
+		e.title_override = def["name"]
+	e.set_meta("quest", quest_id)
+	var p: Vector3 = def["pos"]
+	e.position = free_spot(Vector3(p.x, ground(p.x, p.z), p.z), 0.8, 2.0) + Vector3(0, 0.3, 0)
+	add_child(e)
+	e.died.connect(_on_enemy_died)
+	if def.get("aggro", false):
+		e.call_deferred("aggro")
+	return e
 
 
 func clear_gather_items(quest_id: String) -> void:
@@ -1053,6 +1095,8 @@ func _on_enemy_died(e: Enemy) -> void:
 	if heal > 0.0:
 		player.health = minf(player.max_health, player.health + heal)
 	_drop_loot(e)
+	if story:
+		story.on_enemy_killed(e)      # first: a clue may be left where it fell
 	quests.on_enemy_killed(e)
 	_ai_on_kill(e)
 	if journey:
@@ -1483,7 +1527,7 @@ func _process_roamer(delta: float) -> void:
 ## Called when the player hurts (1), badly hurts (2) or kills (3) a villager or guard.
 func report_crime(severity: int, pos: Vector3) -> void:
 	if severity >= 2:
-		Brain.event("crime", "The Outsider attacked a villager of Ashford", {"importance": 3})
+		Brain.event("crime", "The Outsider attacked a villager of Northvale", {"importance": 3})
 		ai_villagers_react("react_crime", 2.5)
 	if OS.has_environment("SHOT_MODE"):
 		print("CRIME ", severity, " from ", get_stack())

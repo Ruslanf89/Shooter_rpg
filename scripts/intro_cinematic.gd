@@ -296,7 +296,7 @@ func _build_meadow() -> void:
 	for i in 40:
 		var p := MEADOW + Vector3(rng.randf_range(-14, 14), 0, rng.randf_range(-14, 14))
 		MeshKit.sphere(_meadow, rng.randf_range(0.2, 0.45), p, MeshKit.mat(Color(0.3, 0.5, 0.15)), Vector3(1, 0.6, 1))
-	# the abbey on a far hill
+	# the church on a far hill
 	Buildings.house(self, MEADOW + Vector3(-30, 0, -60), 20, Vector3(9, 6, 7), Color(0.5, 0.3, 0.25))
 	VBuild.watchtower(self, MEADOW + Vector3(-22, 0, -66), 0)
 

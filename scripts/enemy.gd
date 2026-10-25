@@ -13,7 +13,7 @@ const TYPES := {
 	"bandit": {"name": "Red Bandit", "hp": 100.0, "speed": 5.0, "damage": 10.0, "range": 2.1, "cooldown": 1.2, "ranged": false, "scale": 1.0, "height": 1.8, "aggro": 18.0},
 	"cap_bandit": {"name": "Cap the Bandit", "hp": 240.0, "speed": 5.4, "damage": 14.0, "range": 2.3, "cooldown": 1.0, "ranged": false, "scale": 1.05, "height": 1.9, "aggro": 20.0},
 	"cultist": {"name": "Shadow Cultist", "hp": 75.0, "speed": 4.0, "damage": 13.0, "range": 24.0, "cooldown": 3.0, "ranged": true, "scale": 1.0, "height": 1.8, "aggro": 24.0, "spell": "shadow"},
-	"captain": {"name": "Bandit Captain", "hp": 320.0, "speed": 5.2, "damage": 18.0, "range": 2.5, "cooldown": 1.4, "ranged": false, "scale": 1.3, "height": 2.35, "aggro": 20.0, "boss": true},
+	"captain": {"name": "Red Bandana Captain", "hp": 320.0, "speed": 5.2, "damage": 18.0, "range": 2.5, "cooldown": 1.4, "ranged": false, "scale": 1.3, "height": 2.35, "aggro": 20.0, "boss": true},
 	# Darkwood
 	"spider": {"name": "Darkwood Spider", "hp": 65.0, "speed": 7.5, "damage": 7.0, "range": 2.1, "cooldown": 0.9, "ranged": false, "scale": 1.0, "height": 0.9, "aggro": 18.0},
 	"skeleton": {"name": "Restless Skeleton", "hp": 95.0, "speed": 4.6, "damage": 11.0, "range": 2.1, "cooldown": 1.2, "ranged": false, "scale": 1.0, "height": 1.8, "aggro": 18.0},
@@ -1394,6 +1394,13 @@ func _physics_process(delta: float) -> void:
 	_process_frost(delta)
 	_process_burn(delta)
 	if state == State.DEAD:
+		return
+	# a scripted conversation is going on (a boss talking): everyone holds still
+	if world.truce and not neutral:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		move_and_slide()
+		_animate(delta)
 		return
 	_hit_t = maxf(0.0, _hit_t - delta)
 	if frozen_t > 0.0 or stun_t > 0.0:

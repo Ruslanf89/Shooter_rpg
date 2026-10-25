@@ -1,0 +1,2008 @@
+{
+ "convos": {
+  "brannock_meet": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "brannock_meet_1",
+     "choices": [
+      {
+       "text": "I'm not looking for trouble.",
+       "to": "trouble"
+      },
+      {
+       "text": "Where am I?",
+       "to": "where"
+      },
+      {
+       "text": "What year is this?",
+       "to": "year"
+      }
+     ]
+    },
+    "trouble": {
+     "say": "brannock_meet_trouble",
+     "next": "rifle"
+    },
+    "where": {
+     "say": "brannock_meet_where",
+     "next": "rifle"
+    },
+    "year": {
+     "say": "brannock_meet_year",
+     "next": "rifle"
+    },
+    "rifle": {
+     "say": "brannock_meet_rifle",
+     "choices": [
+      {
+       "text": "It throws small pieces of metal, very fast. That's all it is.",
+       "to": "explain"
+      },
+      {
+       "text": "It's a rifle. Where I come from, every soldier carries one.",
+       "to": "soldier"
+      }
+     ]
+    },
+    "explain": {
+     "say": "brannock_meet_explain",
+     "choices": [
+      {
+       "text": "Then I'm a man with a stick. I can't make more of them here.",
+       "to": "limit"
+      }
+     ]
+    },
+    "limit": {
+     "say": "brannock_meet_limit",
+     "next": "intro"
+    },
+    "soldier": {
+     "say": "brannock_meet_soldier",
+     "next": "intro"
+    },
+    "intro": {
+     "say": "brannock_hello",
+     "next": "test",
+     "do": [
+      "flag:met_brannock"
+     ]
+    },
+    "test": {
+     "say": "brannock_meet_test",
+     "do": [
+      "step"
+     ],
+     "end": "I'll show you."
+    }
+   }
+  },
+  "stranger_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "stranger_done_1",
+     "next": "two"
+    },
+    "two": {
+     "say": "stranger_done_2",
+     "do": [
+      "complete",
+      "trust:brannock:1"
+     ],
+     "end": "Thank you, Sergeant."
+    }
+   }
+  },
+  "brannock_recruits": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "brannock_recruits_1",
+     "choices": [
+      {
+       "text": "Fire discipline first. Short bursts, aimed, never wasted.",
+       "to": "fire"
+      },
+      {
+       "text": "Small teams. Everyone covers someone.",
+       "to": "team"
+      },
+      {
+       "text": "Dig in. A trench saves more men than a sword.",
+       "to": "dig"
+      }
+     ]
+    },
+    "fire": {
+     "say": "brannock_recruits_fire",
+     "do": [
+      "flag:recruits_talk",
+      "trust:brannock:1"
+     ],
+     "end": "Back"
+    },
+    "team": {
+     "say": "brannock_recruits_team",
+     "do": [
+      "flag:recruits_talk",
+      "trust:brannock:1"
+     ],
+     "end": "Back"
+    },
+    "dig": {
+     "say": "brannock_recruits_dig",
+     "do": [
+      "flag:recruits_talk",
+      "trust:brannock:1"
+     ],
+     "end": "Back"
+    }
+   }
+  },
+  "bandana_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_bandana_offer",
+     "choices": [
+      {
+       "text": "You could send your guards.",
+       "to": "guards"
+      },
+      {
+       "text": "Six bandanas. Consider it done.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "guards": {
+     "say": "brannock_bandana_guards",
+     "choices": [
+      {
+       "text": "I'll get it done.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "brannock_bandana_go",
+     "do": [
+      "accept"
+     ],
+     "end": "On my way."
+    }
+   }
+  },
+  "bandana_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_bandana_done",
+     "next": "two"
+    },
+    "two": {
+     "say": "brannock_bandana_done_2",
+     "do": [
+      "complete",
+      "trust:brannock:1"
+     ],
+     "end": "So do I."
+    }
+   }
+  },
+  "missing_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_missing_offer",
+     "choices": [
+      {
+       "text": "I'll find him.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "brannock_missing_go",
+     "do": [
+      "accept"
+     ],
+     "end": "On my way."
+    }
+   }
+  },
+  "stepan_found": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "stepan_1",
+     "next": "two"
+    },
+    "two": {
+     "say": "stepan_2",
+     "choices": [
+      {
+       "text": "What kind of box?",
+       "to": "box"
+      }
+     ]
+    },
+    "box": {
+     "say": "stepan_box",
+     "next": "badge"
+    },
+    "badge": {
+     "say": "stepan_badge",
+     "do": [
+      "step"
+     ],
+     "end": "I'll find it."
+    }
+   }
+  },
+  "missing_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_missing_done",
+     "choices": [
+      {
+       "text": "A bandit carried a box from the churchyard to their camp, wrapped in church cloth. The captain told them not to open it.",
+       "to": "full"
+      },
+      {
+       "text": "Bandits, moving stolen goods towards their camp.",
+       "to": "partial"
+      }
+     ]
+    },
+    "full": {
+     "say": "brannock_missing_why",
+     "next": "stepan"
+    },
+    "stepan": {
+     "say": "stepan_captain",
+     "who": "stepan",
+     "next": "full_end"
+    },
+    "full_end": {
+     "say": "brannock_missing_full",
+     "do": [
+      "flag:reported_box",
+      "trust:brannock:2",
+      "complete"
+     ],
+     "end": "Goodbye"
+    },
+    "partial": {
+     "say": "brannock_missing_partial",
+     "do": [
+      "flag:withheld_box",
+      "complete"
+     ],
+     "end": "Goodbye"
+    }
+   }
+  },
+  "ledger_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_ledger_offer",
+     "choices": [
+      {
+       "text": "I'll bring you the ledger.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "brannock_ledger_go",
+     "do": [
+      "accept"
+     ],
+     "end": "On my way."
+    }
+   }
+  },
+  "ledger_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_ledger_done",
+     "next": "two"
+    },
+    "two": {
+     "say": "brannock_ledger_2",
+     "choices": [
+      {
+       "text": "Could the traveller be VesPer?",
+       "to": "vesper"
+      },
+      {
+       "text": "Then we ask the captain.",
+       "to": "check"
+      }
+     ]
+    },
+    "vesper": {
+     "say": "brannock_ledger_vesper",
+     "next": "check"
+    },
+    "check": {
+     "next": [
+      [
+       "flag:withheld_box",
+       "withheld"
+      ],
+      [
+       "",
+       "finish"
+      ]
+     ]
+    },
+    "withheld": {
+     "say": "brannock_ledger_withheld",
+     "next": "finish",
+     "do": [
+      "trust:brannock:-1"
+     ]
+    },
+    "finish": {
+     "say": "brannock_ledger_end",
+     "do": [
+      "complete"
+     ],
+     "end": "Goodbye"
+    }
+   }
+  },
+  "captain_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_captain_offer",
+     "choices": [
+      {
+       "text": "I'll end it.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "brannock_captain_go",
+     "do": [
+      "accept"
+     ],
+     "end": "On my way."
+    }
+   }
+  },
+  "captain_intro": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "captain_intro_1",
+     "who": "boss",
+     "choices": [
+      {
+       "text": "Drop your weapon.",
+       "to": "drop"
+      },
+      {
+       "text": "What was in the box?",
+       "to": "box"
+      },
+      {
+       "text": "Who paid you?",
+       "to": "who"
+      }
+     ]
+    },
+    "drop": {
+     "say": "captain_laugh",
+     "who": "boss",
+     "end": "Fight!"
+    },
+    "box": {
+     "say": "captain_box",
+     "who": "boss",
+     "end": "Fight!"
+    },
+    "who": {
+     "say": "captain_who",
+     "who": "boss",
+     "end": "Fight!"
+    }
+   }
+  },
+  "captain_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_captain_done",
+     "choices": [
+      {
+       "text": "The captain carried this. A piece of dark metal.",
+       "to": "fragment",
+       "if": "flag:dark_fragment"
+      },
+      {
+       "text": "It's over, for now.",
+       "to": "finish"
+      }
+     ]
+    },
+    "fragment": {
+     "say": "brannock_captain_fragment",
+     "next": "finish"
+    },
+    "finish": {
+     "say": "brannock_captain_end",
+     "do": [
+      "complete",
+      "trust:brannock:1"
+     ],
+     "end": "Goodbye"
+    }
+   }
+  },
+  "aldric_meet": {
+   "start": "meet",
+   "nodes": {
+    "meet": {
+     "say": "aldric_meet_1",
+     "choices": [
+      {
+       "text": "No. I'm here by accident.",
+       "to": "accident"
+      },
+      {
+       "text": "Only whoever threatens these people.",
+       "to": "soldier"
+      }
+     ]
+    },
+    "accident": {
+     "say": "aldric_meet_accident",
+     "next": "hub",
+     "do": [
+      "flag:met_aldric"
+     ]
+    },
+    "soldier": {
+     "say": "aldric_meet_soldier",
+     "next": "hub",
+     "do": [
+      "flag:met_aldric"
+     ]
+    }
+   }
+  },
+  "wolves_offer": {
+   "start": "start",
+   "nodes": {
+    "meet": {
+     "say": "aldric_meet_1",
+     "choices": [
+      {
+       "text": "No. I'm here by accident.",
+       "to": "accident"
+      },
+      {
+       "text": "Only whoever threatens these people.",
+       "to": "soldier"
+      }
+     ]
+    },
+    "start": {
+     "next": [
+      [
+       "!flag:met_aldric",
+       "meet"
+      ],
+      [
+       "",
+       "offer"
+      ]
+     ]
+    },
+    "accident": {
+     "say": "aldric_meet_accident",
+     "next": "offer",
+     "do": [
+      "flag:met_aldric"
+     ]
+    },
+    "soldier": {
+     "say": "aldric_meet_soldier",
+     "next": "offer",
+     "do": [
+      "flag:met_aldric"
+     ]
+    },
+    "offer": {
+     "say": "nv_wolves_offer",
+     "choices": [
+      {
+       "text": "Wolves don't usually attack settlements like this?",
+       "to": "why"
+      },
+      {
+       "text": "I'll deal with them.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "why": {
+     "say": "aldric_wolves_why",
+     "choices": [
+      {
+       "text": "I'll deal with them.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "aldric_wolves_go",
+     "do": [
+      "accept"
+     ],
+     "end": "I'll be careful."
+    }
+   }
+  },
+  "wolves_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_wolves_done",
+     "choices": [
+      {
+       "text": "One of them was wrong. Black gums, and grey fur that didn't match the rest.",
+       "to": "grey",
+       "if": "flag:grey_wolf"
+      },
+      {
+       "text": "They're quiet now.",
+       "to": "finish"
+      }
+     ]
+    },
+    "grey": {
+     "say": "aldric_wolves_grey",
+     "do": [
+      "complete",
+      "trust:aldric:1"
+     ],
+     "end": "Goodbye"
+    },
+    "finish": {
+     "next": "end",
+     "do": [
+      "complete",
+      "trust:aldric:1"
+     ]
+    }
+   }
+  },
+  "letter_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_letter_done",
+     "next": "margin"
+    },
+    "margin": {
+     "say": "aldric_letter_margin",
+     "choices": [
+      {
+       "text": "Everyone heard them?",
+       "to": "rope"
+      },
+      {
+       "text": "Does that matter?",
+       "to": "order"
+      }
+     ]
+    },
+    "rope": {
+     "say": "aldric_letter_rope",
+     "next": "finish"
+    },
+    "order": {
+     "say": "aldric_letter_order",
+     "next": "finish"
+    },
+    "finish": {
+     "say": "aldric_letter_end",
+     "do": [
+      "complete",
+      "trust:aldric:1"
+     ],
+     "end": "Thank you."
+    }
+   }
+  },
+  "churchyard_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_churchyard_offer",
+     "choices": [
+      {
+       "text": "You want the stranger with the rifle to investigate the dead?",
+       "to": "plan"
+      },
+      {
+       "text": "I'll look at the graves.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "plan": {
+     "say": "aldric_churchyard_plan",
+     "choices": [
+      {
+       "text": "I'll look at the graves.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "aldric_churchyard_go",
+     "do": [
+      "accept"
+     ],
+     "end": "On my way."
+    }
+   }
+  },
+  "churchyard_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_churchyard_done",
+     "choices": [
+      {
+       "text": "Open graves. Black residue in a niche and on a branch. Boot prints to your wall. And mushrooms under a dead stump.",
+       "to": "mush"
+      }
+     ]
+    },
+    "mush": {
+     "say": "aldric_churchyard_mushrooms",
+     "choices": [
+      {
+       "text": "Something like that. I saw one before I came here.",
+       "to": "before"
+      }
+     ]
+    },
+    "before": {
+     "say": "aldric_churchyard_before",
+     "next": "subject"
+    },
+    "subject": {
+     "say": "aldric_churchyard_subject",
+     "do": [
+      "complete",
+      "trust:aldric:1"
+     ],
+     "end": "Thank you."
+    }
+   }
+  },
+  "candles_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_candles_offer",
+     "choices": [
+      {
+       "text": "Why do they want candles?",
+       "to": "why"
+      },
+      {
+       "text": "I'll bring them back.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "why": {
+     "say": "aldric_candles_why",
+     "choices": [
+      {
+       "text": "I'll bring them back.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "aldric_candles_go",
+     "do": [
+      "accept"
+     ],
+     "end": "On my way."
+    }
+   }
+  },
+  "candles_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_candles_done",
+     "choices": [
+      {
+       "text": "Their foreman carried a stone shard with the same grey residue.",
+       "to": "shard"
+      }
+     ]
+    },
+    "shard": {
+     "say": "aldric_candles_shard",
+     "do": [
+      "complete",
+      "trust:aldric:1"
+     ],
+     "end": "Goodbye"
+    }
+   }
+  },
+  "road_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_road_offer",
+     "choices": [
+      {
+       "text": "What's out there?",
+       "to": "what"
+      },
+      {
+       "text": "I'll check the road.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "what": {
+     "say": "aldric_road_what",
+     "choices": [
+      {
+       "text": "I'll check the road.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "aldric_road_go",
+     "do": [
+      "accept"
+     ],
+     "end": "I'll be careful."
+    }
+   }
+  },
+  "road_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_road_done",
+     "next": "brannock"
+    },
+    "brannock": {
+     "say": "brannock_road",
+     "who": "brannock",
+     "next": "vesper"
+    },
+    "vesper": {
+     "say": "vesper_road",
+     "who": "vesper",
+     "next": "finish"
+    },
+    "finish": {
+     "say": "aldric_road_end",
+     "do": [
+      "complete",
+      "trust:aldric:1"
+     ],
+     "end": "Goodbye"
+    }
+   }
+  },
+  "aldric_records": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "aldric_records_1",
+     "choices": [
+      {
+       "text": "Strangers who came out of nowhere. Lights in the fields.",
+       "to": "who"
+      },
+      {
+       "text": "I won't tell anyone.",
+       "to": "keep"
+      }
+     ],
+     "do": [
+      "flag:aldric_records",
+      "trust:aldric:1"
+     ]
+    },
+    "who": {
+     "say": "aldric_records_2",
+     "next": "hub"
+    },
+    "keep": {
+     "say": "aldric_records_keep",
+     "next": "hub"
+    }
+   }
+  },
+  "grain_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "next": [
+      [
+       "!flag:met_maybell",
+       "meet"
+      ],
+      [
+       "",
+       "offer"
+      ]
+     ]
+    },
+    "meet": {
+     "say": "maybell_hello",
+     "choices": [
+      {
+       "text": "I'm here to help.",
+       "to": "offer"
+      }
+     ],
+     "do": [
+      "flag:met_maybell"
+     ]
+    },
+    "offer": {
+     "say": "nv_grain_offer",
+     "choices": [
+      {
+       "text": "I'll bring back what I find.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "maybell_grain_go",
+     "do": [
+      "accept"
+     ],
+     "end": "I'll mind the chickens."
+    }
+   }
+  },
+  "grain_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_grain_done",
+     "next": [
+      [
+       "flag:grey_wheat",
+       "grey"
+      ],
+      [
+       "",
+       "end"
+      ]
+     ],
+     "do": [
+      "complete",
+      "trust:maybell:1"
+     ],
+     "end": "Goodbye"
+    },
+    "grey": {
+     "say": "maybell_grain_grey",
+     "end": "Goodbye"
+    }
+   }
+  },
+  "letter_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "nv_letter_offer",
+     "choices": [
+      {
+       "text": "I'll take it.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "maybell_letter_go",
+     "do": [
+      "accept"
+     ],
+     "end": "I won't tell you."
+    }
+   }
+  },
+  "drone_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "next": [
+      [
+       "!flag:met_vesper",
+       "meet"
+      ],
+      [
+       "",
+       "offer"
+      ]
+     ]
+    },
+    "meet": {
+     "say": "vesper_hello",
+     "next": "offer",
+     "do": [
+      "flag:met_vesper"
+     ]
+    },
+    "offer": {
+     "say": "vesper_drone_offer",
+     "choices": [
+      {
+       "text": "You could have climbed it yourself.",
+       "to": "dance"
+      },
+      {
+       "text": "I'll get it.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "dance": {
+     "say": "vesper_drone_dance",
+     "choices": [
+      {
+       "text": "Fine. I'll climb.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "vesper_drone_go",
+     "do": [
+      "accept"
+     ],
+     "end": "On my way."
+    }
+   }
+  },
+  "drone_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "vesper_drone_done",
+     "next": "rec"
+    },
+    "rec": {
+     "say": "vesper_drone_rec",
+     "next": "rec2",
+     "event": "drone_recording"
+    },
+    "rec2": {
+     "say": "vesper_drone_rec_2",
+     "choices": [
+      {
+       "text": "What is that shape?",
+       "to": "shape"
+      },
+      {
+       "text": "We should show this to Aldric.",
+       "to": "ask"
+      }
+     ]
+    },
+    "shape": {
+     "say": "vesper_drone_shape",
+     "next": "ask"
+    },
+    "ask": {
+     "say": "vesper_drone_ask",
+     "choices": [
+      {
+       "text": "All right. I'll keep quiet.",
+       "to": "gift",
+       "do": [
+        "flag:kept_recording",
+        "trust:vesper:1"
+       ]
+      },
+      {
+       "text": "Why not?",
+       "to": "why"
+      }
+     ]
+    },
+    "why": {
+     "say": "vesper_drone_why",
+     "next": "gift"
+    },
+    "gift": {
+     "say": "vesper_drone_gift",
+     "do": [
+      "complete",
+      "trust:vesper:1"
+     ],
+     "end": "Thank you."
+    }
+   }
+  },
+  "battery_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "vesper_battery_offer",
+     "choices": [
+      {
+       "text": "Why do they matter so much?",
+       "to": "why"
+      },
+      {
+       "text": "Where are they?",
+       "to": "where"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "why": {
+     "say": "vesper_battery_why",
+     "choices": [
+      {
+       "text": "I'll get them.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "where": {
+     "say": "vesper_battery_where",
+     "choices": [
+      {
+       "text": "I'll get them.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "vesper_battery_go",
+     "do": [
+      "accept"
+     ],
+     "end": "On my way."
+    }
+   }
+  },
+  "battery_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "vesper_battery_done",
+     "choices": [
+      {
+       "text": "Where did you learn to repair them?",
+       "to": "learn"
+      },
+      {
+       "text": "That one has a date scratched on it.",
+       "to": "mark",
+       "if": "flag:battery_mark"
+      }
+     ]
+    },
+    "learn": {
+     "say": "vesper_battery_learn",
+     "next": "finish"
+    },
+    "mark": {
+     "say": "vesper_battery_mark",
+     "next": "finish",
+     "do": [
+      "flag:asked_mark"
+     ]
+    },
+    "finish": {
+     "say": "vesper_battery_end",
+     "do": [
+      "complete",
+      "trust:vesper:1"
+     ],
+     "end": "Thank you."
+    }
+   }
+  },
+  "notebook_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "vesper_notebook_offer",
+     "choices": [
+      {
+       "text": "Why were you at the cemetery at night?",
+       "to": "why"
+      },
+      {
+       "text": "I'll find it.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "why": {
+     "say": "vesper_notebook_why",
+     "choices": [
+      {
+       "text": "I'll find it.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "say": "vesper_notebook_go",
+     "do": [
+      "accept"
+     ],
+     "end": "On my way."
+    }
+   }
+  },
+  "notebook_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "vesper_notebook_done",
+     "choices": [
+      {
+       "text": "You wrote all this before I arrived.",
+       "to": "one"
+      }
+     ]
+    },
+    "one": {
+     "say": "vesper_notebook_1",
+     "choices": [
+      {
+       "text": "You wrote about someone arriving.",
+       "to": "two"
+      }
+     ]
+    },
+    "two": {
+     "say": "vesper_notebook_2",
+     "choices": [
+      {
+       "text": "Did you know I was coming?",
+       "to": "three"
+      }
+     ]
+    },
+    "three": {
+     "say": "vesper_notebook_3",
+     "next": "close"
+    },
+    "close": {
+     "say": "vesper_notebook_close",
+     "do": [
+      "complete",
+      "trust:vesper:2",
+      "flag:read_notebook"
+     ],
+     "end": "Goodbye"
+    }
+   }
+  },
+  "lesson_offer": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "vesper_lesson_offer",
+     "choices": [
+      {
+       "text": "That sounds familiar.",
+       "to": "familiar"
+      },
+      {
+       "text": "What do you need?",
+       "to": "list"
+      }
+     ]
+    },
+    "familiar": {
+     "say": "vesper_lesson_familiar",
+     "next": "list"
+    },
+    "list": {
+     "say": "vesper_lesson_list",
+     "choices": [
+      {
+       "text": "I'll find the parts.",
+       "to": "go"
+      },
+      {
+       "text": "Not now.",
+       "to": "end"
+      }
+     ]
+    },
+    "go": {
+     "next": "end",
+     "do": [
+      "accept"
+     ]
+    }
+   }
+  },
+  "lesson_done": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "vesper_lesson_done",
+     "next": "fly"
+    },
+    "fly": {
+     "next": "after",
+     "event": "drone_flight",
+     "wait": true
+    },
+    "after": {
+     "say": "vesper_lesson_after",
+     "choices": [
+      {
+       "text": "What was it?",
+       "to": "what"
+      }
+     ]
+    },
+    "what": {
+     "say": "vesper_lesson_what",
+     "do": [
+      "complete",
+      "trust:vesper:1",
+      "flag:drone_flight_seen"
+     ],
+     "end": "Thank you."
+    }
+   }
+  },
+  "vesper_dusk": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "vesper_dusk_1",
+     "choices": [
+      {
+       "text": "Do you think we can get home?",
+       "to": "two"
+      }
+     ]
+    },
+    "two": {
+     "say": "vesper_dusk_2",
+     "choices": [
+      {
+       "text": "What does that mean?",
+       "to": "three"
+      }
+     ]
+    },
+    "three": {
+     "say": "vesper_dusk_3",
+     "do": [
+      "flag:dusk_talk"
+     ],
+     "end": "..."
+    }
+   }
+  },
+  "danylo_cursed": {
+   "start": "start",
+   "nodes": {
+    "start": {
+     "say": "danylo_cursed_1",
+     "choices": [
+      {
+       "text": "Only when I pull the trigger.",
+       "to": "trigger"
+      },
+      {
+       "text": "It's just iron and springs.",
+       "to": "springs"
+      }
+     ]
+    },
+    "trigger": {
+     "say": "danylo_cursed_trigger",
+     "next": "hub",
+     "do": [
+      "flag:danylo_trusts"
+     ]
+    },
+    "springs": {
+     "say": "danylo_cursed_springs",
+     "next": "hub",
+     "do": [
+      "flag:danylo_trusts"
+     ]
+    }
+   }
+  }
+ },
+ "npcs": {
+  "brannock": {
+   "greet": [
+    {
+     "if": "step:nv_stranger:2",
+     "line": "brannock_targets_wait"
+    },
+    {
+     "if": "done:nv_captain !flag:g_brannock_captain",
+     "line": "brannock_after_captain",
+     "do": [
+      "flag:g_brannock_captain"
+     ]
+    },
+    {
+     "if": "!flag:met_brannock",
+     "line": "brannock_hello",
+     "do": [
+      "flag:met_brannock"
+     ]
+    },
+    {
+     "line": "brannock_hello2"
+    }
+   ],
+   "topics": [
+    {
+     "text": "The town",
+     "line": "brannock_town"
+    },
+    {
+     "text": "My weapon",
+     "line": "brannock_weapon"
+    },
+    {
+     "text": "The bandits",
+     "line": "brannock_bandits"
+    },
+    {
+     "text": "The broken shield",
+     "if": "flag:seen_shield",
+     "line": "brannock_shield"
+    },
+    {
+     "text": "Training recruits",
+     "if": "done:nv_captain !flag:recruits_talk",
+     "convo": "brannock_recruits"
+    }
+   ]
+  },
+  "aldric": {
+   "greet": [
+    {
+     "if": "!flag:met_aldric",
+     "convo": "aldric_meet"
+    },
+    {
+     "if": "flag:read_records !flag:aldric_records",
+     "convo": "aldric_records"
+    },
+    {
+     "if": "done:nv_captain !flag:g_aldric_captain",
+     "line": "aldric_after_captain",
+     "do": [
+      "flag:g_aldric_captain"
+     ]
+    },
+    {
+     "line": "aldric_hello"
+    }
+   ],
+   "topics": [
+    {
+     "text": "The town",
+     "line": "aldric_town"
+    },
+    {
+     "text": "The bells",
+     "line": "aldric_bells"
+    },
+    {
+     "text": "My weapon",
+     "line": "aldric_weapon"
+    },
+    {
+     "text": "The mushrooms",
+     "if": "flag:found_mushrooms",
+     "line": "aldric_mushrooms"
+    },
+    {
+     "text": "The crypt",
+     "line": "aldric_crypt"
+    },
+    {
+     "text": "The dark fragment",
+     "if": "flag:dark_fragment",
+     "line": "aldric_fragment"
+    }
+   ]
+  },
+  "maybell": {
+   "greet": [
+    {
+     "if": "!flag:met_maybell",
+     "line": "maybell_hello",
+     "do": [
+      "flag:met_maybell"
+     ]
+    },
+    {
+     "if": "done:nv_captain !flag:g_maybell_captain",
+     "line": "maybell_after_captain",
+     "do": [
+      "flag:g_maybell_captain"
+     ]
+    },
+    {
+     "if": "done:nv_grain !flag:g_maybell_farm",
+     "line": "maybell_after_farm",
+     "do": [
+      "flag:g_maybell_farm"
+     ]
+    },
+    {
+     "line": "maybell_hello2"
+    }
+   ],
+   "topics": [
+    {
+     "text": "Your family",
+     "line": "maybell_family"
+    },
+    {
+     "text": "The bandits",
+     "line": "maybell_bandits"
+    },
+    {
+     "text": "The church",
+     "line": "maybell_church"
+    },
+    {
+     "text": "The grey wheat",
+     "if": "flag:grey_wheat",
+     "line": "maybell_pattern"
+    }
+   ]
+  },
+  "vesper": {
+   "greet": [
+    {
+     "if": "!flag:met_vesper",
+     "line": "vesper_hello",
+     "do": [
+      "flag:met_vesper"
+     ]
+    },
+    {
+     "if": "ready:nv_road_east",
+     "line": "vesper_gathering"
+    },
+    {
+     "if": "done:nv_road_east !flag:g_vesper_goodbye",
+     "line": "vesper_goodbye",
+     "do": [
+      "flag:g_vesper_goodbye"
+     ]
+    },
+    {
+     "if": "done:vesper_notebook !flag:vesper_honest",
+     "line": "vesper_honest",
+     "do": [
+      "flag:vesper_honest"
+     ]
+    },
+    {
+     "line": "vesper_hello2"
+    }
+   ],
+   "topics": [
+    {
+     "text": "Your past",
+     "line": "vesper_past"
+    },
+    {
+     "text": "How did you get here?",
+     "line": "vesper_arrive"
+    },
+    {
+     "text": "My rifle",
+     "line": "vesper_rifle"
+    },
+    {
+     "text": "The drone",
+     "if": "done:vesper_drone",
+     "line": "vesper_drone_topic"
+    },
+    {
+     "text": "The glowing mushroom",
+     "if": "flag:found_mushrooms done:vesper_notebook",
+     "line": "vesper_mushroom"
+    },
+    {
+     "text": "The cloth under your bedroll",
+     "if": "flag:found_cloth",
+     "line": "vesper_cloth"
+    },
+    {
+     "text": "Your map",
+     "if": "flag:found_map",
+     "line": "vesper_map"
+    },
+    {
+     "text": "You've been here a long time.",
+     "if": "evening done:nv_captain !flag:dusk_talk",
+     "convo": "vesper_dusk",
+     "hub": false
+    }
+   ]
+  },
+  "marta": {
+   "greet": [
+    {
+     "if": "!flag:met_marta",
+     "line": "marta_hello",
+     "do": [
+      "flag:met_marta"
+     ]
+    },
+    {
+     "if": "done:nv_captain !flag:g_marta_captain",
+     "line": "marta_after_captain",
+     "do": [
+      "flag:g_marta_captain"
+     ]
+    },
+    {
+     "line": "marta_hello2"
+    }
+   ],
+   "topics": [
+    {
+     "text": "Rumours",
+     "line": "marta_rumours"
+    },
+    {
+     "text": "VesPer",
+     "line": "marta_vesper"
+    },
+    {
+     "text": "The locked room upstairs",
+     "line": "marta_room"
+    },
+    {
+     "text": "The night of the bells",
+     "line": "marta_bells"
+    },
+    {
+     "text": "Rest by the fire (5 gold)",
+     "event": "rest",
+     "line": "marta_rest"
+    }
+   ]
+  },
+  "danylo": {
+   "greet": [
+    {
+     "if": "!flag:met_danylo",
+     "line": "danylo_hello",
+     "do": [
+      "flag:met_danylo"
+     ]
+    },
+    {
+     "if": "done:nv_captain !flag:danylo_thanked",
+     "line": "danylo_after_help",
+     "do": [
+      "flag:danylo_thanked"
+     ]
+    },
+    {
+     "line": "danylo_hello2"
+    }
+   ],
+   "topics": [
+    {
+     "text": "My weapon",
+     "line": "danylo_weapon"
+    },
+    {
+     "text": "Is it cursed?",
+     "if": "!flag:danylo_trusts",
+     "convo": "danylo_cursed"
+    },
+    {
+     "text": "Copying parts",
+     "if": "flag:danylo_trusts done:nv_captain",
+     "line": "danylo_copy"
+    }
+   ]
+  },
+  "iva": {
+   "greet": [
+    {
+     "if": "!flag:met_iva",
+     "line": "iva_hello",
+     "do": [
+      "flag:met_iva"
+     ]
+    },
+    {
+     "if": "done:nv_captain !flag:g_iva_captain",
+     "line": "iva_after_captain",
+     "do": [
+      "flag:g_iva_captain"
+     ]
+    },
+    {
+     "line": "iva_hello2"
+    }
+   ],
+   "topics": [
+    {
+     "text": "The church",
+     "line": "iva_church"
+    },
+    {
+     "text": "VesPer",
+     "line": "iva_vesper"
+    },
+    {
+     "text": "Does the gun need food?",
+     "line": "iva_gun"
+    }
+   ]
+  },
+  "olek": {
+   "greet": [
+    {
+     "if": "!flag:met_olek",
+     "line": "olek_hello",
+     "do": [
+      "flag:met_olek"
+     ]
+    },
+    {
+     "if": "flag:found_mushrooms !flag:olek_black",
+     "line": "olek_after_graves",
+     "do": [
+      "flag:olek_black"
+     ]
+    },
+    {
+     "line": "olek_hello2"
+    }
+   ],
+   "topics": [
+    {
+     "text": "The bells",
+     "line": "olek_bells"
+    },
+    {
+     "text": "The night before I came",
+     "line": "olek_night"
+    },
+    {
+     "text": "The crow",
+     "line": "olek_crow"
+    }
+   ]
+  },
+  "stepan": {
+   "greet": [
+    {
+     "if": "ready:nv_missing",
+     "line": "stepan_ready"
+    },
+    {
+     "if": "done:nv_missing !flag:g_stepan_after",
+     "line": "stepan_after",
+     "do": [
+      "flag:g_stepan_after"
+     ]
+    },
+    {
+     "if": "active:nv_missing",
+     "line": "stepan_hide"
+    },
+    {
+     "line": "stepan_hello"
+    }
+   ],
+   "topics": []
+  }
+ },
+ "clues": {
+  "grey_wolf": {
+   "title": "Grey-Muzzled Wolf",
+   "at_kill": "Grey-Muzzled Wolf",
+   "flag": "grey_wolf",
+   "line": "th_grey_wolf",
+   "sound": "pickup_item",
+   "text": "Its gums are black. A patch of grey fur runs along the muzzle, coarse and dry, as if it belonged to another animal."
+  },
+  "grave_1": {
+   "title": "Open Grave",
+   "sound": "pickup_item",
+   "text": "The earth is heaped outward, not inward. The lid lies beside the pit, cracked along one edge."
+  },
+  "grave_2": {
+   "title": "Open Grave",
+   "sound": "pickup_item",
+   "text": "A family slab, shoved aside. The name is worn smooth, but someone has scratched a fresh mark beneath it."
+  },
+  "grave_3": {
+   "title": "Open Grave",
+   "line": "th_open_grave",
+   "sound": "pickup_item",
+   "text": "Empty. Along the inner edge runs a black residue that looks sticky but is dry to the touch."
+  },
+  "yard_niche": {
+   "title": "Burial Niche",
+   "sound": "pickup_item",
+   "text": "The vault's niche stands open. Inside, the black residue coats the stone like soot, but it smells of wet earth, not fire."
+  },
+  "yard_branch": {
+   "title": "Broken Branch",
+   "sound": "impact_wood",
+   "text": "Snapped at shoulder height. The same black smear on the bark, as if something brushed past."
+  },
+  "yard_prints": {
+   "title": "Boot Prints",
+   "sound": "pickup_item",
+   "text": "Two kinds of sole: a broad heel and a narrow one. They cross the grass and stop at the church wall."
+  },
+  "yard_mushrooms": {
+   "title": "Pale Mushrooms",
+   "flag": "found_mushrooms",
+   "line": "th_mushrooms",
+   "sound": "pickup_item",
+   "text": "A cluster of pale mushrooms under the rotten stump. They give off a faint glow, even by day."
+  },
+  "foreman_shard": {
+   "title": "Stone Shard",
+   "at_kill": "Kobold Foreman",
+   "flag": "foreman_shard",
+   "line": "th_shard",
+   "sound": "pickup_item",
+   "text": "A shard of stone the foreman kept like a treasure. One face is coated in the same grey residue as the graves."
+  },
+  "black_cloth": {
+   "title": "Black Cloth",
+   "flag": "black_cloth",
+   "line": "th_black_cloth",
+   "sound": "pickup_item",
+   "text": "A strip of blackened cloth caught on a branch at head height. It is stiff with the same residue."
+  },
+  "barricade": {
+   "title": "Collapsed Gate",
+   "sound": "impact_wood",
+   "text": "The timber gate fell outward, towards Northvale. Something pushed it from the Darkwood side."
+  },
+  "vesper_page_1": {
+   "title": "Torn Page",
+   "text": "A page in a hurried hand: 'Bell again. 3:12. Rope still.' The rest is smudged."
+  },
+  "vesper_page_2": {
+   "title": "Torn Page",
+   "text": "A sketch of the oak with an arrow, and a note: 'Signal dies by the church. Always by the church.'"
+  },
+  "notebook_entries": {
+   "title": "VesPer's Notebook",
+   "text": "Weather. Food. Drone repairs. Sketches of a glowing mushroom, a riverbank, and a shape that might be a person or a reflection. Then: 'The river flows north here. It should not.' 'The mushrooms only glow after the bell.' 'The old man at the church asked where I came from. I lied.' 'I saw the same light in the water again.' 'If another person arrives, I need to know whether they saw the mushroom too...' The last entry stops mid-sentence."
+  },
+  "grey_sack": {
+   "title": "Grey Wheat",
+   "flag": "grey_wheat",
+   "text": "This sack is damp, and the wheat inside has gone an unhealthy grey."
+  },
+  "battery_mark": {
+   "title": "Drone Battery",
+   "flag": "battery_mark",
+   "line": "th_battery",
+   "text": "One battery has a marking scratched into its casing, like a date."
+  },
+  "ledger_entry": {
+   "title": "The Captain's Ledger",
+   "flag": "read_ledger",
+   "text": "Stolen food. Batteries. Iron tools. And one entry: 'One sealed box from the church. Payment received from a traveller. Do not break the seal.' It is dated before you arrived."
+  },
+  "dark_fragment": {
+   "title": "Dark Fragment",
+   "flag": "dark_fragment",
+   "line": "th_fragment",
+   "subtle": false,
+   "once": true,
+   "sound": "pickup_item",
+   "text": "A small sealed fragment of dark metal from the captain's belt, beside a ring of stolen keys. It is colder than it should be."
+  },
+  "vesper_cloth": {
+   "title": "Folded Cloth",
+   "flag": "found_cloth",
+   "once": true,
+   "text": "Under the bedroll: a folded piece of cloth that was once part of ordinary workwear. The stitching is machine-straight."
+  },
+  "vesper_map": {
+   "title": "Hand-drawn Map",
+   "flag": "found_map",
+   "once": true,
+   "text": "A charcoal map of the valley. Some marks follow the roads. Others don't follow anything at all."
+  },
+  "records": {
+   "title": "Church Records",
+   "flag": "read_records",
+   "once": true,
+   "subtle": false,
+   "needs": "flag:church_key",
+   "needs_text": "The cabinet is locked.",
+   "text": "Burial registers in a dozen hands. Between them, a sealed letter, its wax unbroken, addressed to 'whoever keeps the bell after me'. And an older entry in faded ink: 'A traveller came down the north road in a coat of no cloth we know. He spoke of a light in the water. He stayed the winter and was gone by spring.'"
+  },
+  "prayer_book": {
+   "title": "Prayer Book",
+   "once": true,
+   "text": "A heavy book on the lectern. Several pages are marked with charcoal. One is headed 'Of the dead who refuse their graves'. Someone has underlined the word 'refuse' three times."
+  },
+  "notice_board": {
+   "title": "Notice Board",
+   "once": true,
+   "text": "MISSING: a traveller in a grey coat, last seen at the Crooked Ladle. Ask Marta. WOLVES: keep children inside after dark. And a charcoal sketch of the bandit camp, with an arrow and the word 'NO'."
+  },
+  "guard_map": {
+   "title": "Map Table",
+   "once": true,
+   "text": "Charcoal roads, enemy camps circled twice. Beside the map lie patrol records and three missing-person reports, one of them in Brannock's own hand."
+  },
+  "broken_shield": {
+   "title": "Broken Shield",
+   "flag": "seen_shield",
+   "once": true,
+   "text": "A guard's shield, split down the middle. Someone has kept it clean."
+  },
+  "granary_stain": {
+   "title": "Black Mould",
+   "flag": "granary_mould",
+   "once": true,
+   "text": "Damp black mould on the granary wall. It looks like ordinary rot. Mostly."
+  }
+ },
+ "static_clues": [
+  "vesper_cloth",
+  "vesper_map",
+  "records",
+  "prayer_book",
+  "notice_board",
+  "guard_map",
+  "broken_shield",
+  "granary_stain"
+ ],
+ "boss_intro": {
+  "captain": {
+   "convo": "captain_intro",
+   "radius": 16.0
+  }
+ },
+ "boss_titles": {
+  "captain": "Master of the South Road"
+ },
+ "on_kill": {
+  "captain": {
+   "clue": "dark_fragment",
+   "boss": true
+  }
+ },
+ "recording": "res://assets/textures/story/drone_recording.png"
+}
